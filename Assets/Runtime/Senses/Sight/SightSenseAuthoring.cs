@@ -4,79 +4,100 @@ using UnityEngine;
 
 namespace PerceptionECS
 {
-    public class SightSenseAuthoring : MonoBehaviour
+    public sealed class SightSenseAuthoring : MonoBehaviour
     {
-        [SerializeField] private float _sightRadius = 20;
-        [SerializeField] private float _loseSightRadius = 30;
-        [SerializeField] private float _peripheralVisionAngleDegrees = 45;
-        [SerializeField] private SenseAffiliationFilter _detectionByAffiliation = new();
-        [SerializeField] private float _autoSuccessRangeFromLastSeenLocation = 0;
-        [SerializeField] private float _pointOfViewBackwardOffset = 2;
-        [SerializeField] private float _nearClippingRadius = 1;
+        [SerializeField] private float _viewRadius = 5;
+        [SerializeField] private float _loseRadius = 7;
+        [SerializeField] private float _nearClipRadius = 0.5f;
+        [SerializeField] private float _backwardOffset = 2;
+        [SerializeField] private float _viewAngleDegrees = 90;
 
         private class Baker : Baker<SightSenseAuthoring>
         {
             public override void Bake(SightSenseAuthoring authoring)
             {
-                var entity = GetEntity(TransformUsageFlags.None);
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity, new SightSenseComponent
                 {
-                    PeripheralVisionAngleCos = math.cos(math.clamp(math.radians(authoring._peripheralVisionAngleDegrees), 0f, math.PI)),
-                    SightRadiusSquared = math.pow(authoring._sightRadius + authoring._pointOfViewBackwardOffset, 2),
-                    AutoSuccessRangeSquaredFromLastSeenLocation = authoring._autoSuccessRangeFromLastSeenLocation == -1
-                        ? -1
-                        : math.pow(authoring._autoSuccessRangeFromLastSeenLocation, 2),
-                    LoseSightRadiusSquared = math.pow(authoring._loseSightRadius + authoring._pointOfViewBackwardOffset, 2),
-                    PointOfViewBackwardOffset = authoring._pointOfViewBackwardOffset,
-                    NearClippingRadiusSquared = math.pow(authoring._nearClippingRadius, 2),
-                    AffiliationFlags = (ushort)authoring._detectionByAffiliation,
+                    ViewAngleCos = math.cos(math.clamp(math.radians(authoring._viewAngleDegrees), 0f, math.PI)),
+                    ViewRadiusSquared = math.pow(authoring._viewRadius, 2),
+                    LoseRadiusSquared = math.pow(authoring._loseRadius, 2),
+                    BackwardOffset = authoring._backwardOffset,
+                    NearClipRadiusSquared = math.pow(authoring._nearClipRadius, 2),
                 });
             }
         }
 
-        private void OnDrawGizmosSelected()
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
         {
             var transform = this.transform;
             var forward = transform.forward;
             var right = transform.right;
-            var vision = math.tan(math.radians(_peripheralVisionAngleDegrees / 2));
-            var nearClip = vision * _nearClippingRadius;
-            var farClip = vision * _sightRadius;
-            var loseClip = vision * _loseSightRadius;
 
-            var startPoint = transform.position + forward * -_pointOfViewBackwardOffset;
-            var nearClipPoint1 = startPoint + forward * _nearClippingRadius + right * nearClip;
-            var nearClipPoint2 = startPoint + forward * _nearClippingRadius + right * -nearClip;
-            var farClipPoint1 = startPoint + forward * _sightRadius + right * farClip;
-            var farClipPoint2 = startPoint + forward * _sightRadius + right * -farClip;
-            var loseClipPoint1 = startPoint + forward * _loseSightRadius + right * loseClip;
-            var loseClipPoint2 = startPoint + forward * _loseSightRadius + right * -loseClip;
+            var vision_x = math.cos(math.radians(_viewAngleDegrees / 2));
+            var vision_y = math.sin(math.radians(_viewAngleDegrees / 2));
+
+            var startPoint = transform.position + forward * -_backwardOffset;
+            var nearClipPoint1 = startPoint + forward * vision_x * _nearClipRadius + right * vision_y * _nearClipRadius;
+            var nearClipPoint2 = startPoint + forward * vision_x * _nearClipRadius + right * -vision_y * _nearClipRadius;
+            var farClipPoint1 = startPoint + forward * vision_x * _viewRadius + right * vision_y * _viewRadius;
+            var farClipPoint2 = startPoint + forward * vision_x * _viewRadius + right * vision_y * -_viewRadius;
+            var loseClipPoint1 = startPoint + forward * vision_x * _loseRadius + right * vision_y * _loseRadius;
+            var loseClipPoint2 = startPoint + forward * vision_x * _loseRadius + right * vision_y * -_loseRadius;
 
             Gizmos.color = Color.gray;
             Gizmos.DrawLine(startPoint, nearClipPoint1);
             Gizmos.DrawLine(startPoint, nearClipPoint2);
 
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(nearClipPoint1, nearClipPoint2);
             Gizmos.DrawLine(nearClipPoint1, farClipPoint1);
             Gizmos.DrawLine(nearClipPoint2, farClipPoint2);
-            Gizmos.DrawLine(farClipPoint1, farClipPoint2);
 
             Gizmos.color = Color.red;
             Gizmos.DrawLine(farClipPoint1, loseClipPoint1);
             Gizmos.DrawLine(farClipPoint2, loseClipPoint2);
-            Gizmos.DrawLine(loseClipPoint1, loseClipPoint2);
+
+            for (var i = 0; i < _viewAngleDegrees / 2; i += 2)
+            {
+                var previous_x = math.cos(math.radians(i));
+                var previous_y = math.sin(math.radians(i));
+                var current_x = math.cos(math.radians(math.clamp(i + 2, 0, _viewAngleDegrees / 2)));
+                var current_y = math.sin(math.radians(math.clamp(i + 2, 0, _viewAngleDegrees / 2)));
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(
+                    startPoint + forward * previous_x * _nearClipRadius + right * previous_y * _nearClipRadius,
+                    startPoint + forward * current_x * _nearClipRadius + right * current_y * _nearClipRadius);
+                Gizmos.DrawLine(
+                    startPoint + forward * previous_x * _nearClipRadius + right * -previous_y * _nearClipRadius,
+                    startPoint + forward * current_x * _nearClipRadius + right * -current_y * _nearClipRadius);
+
+                Gizmos.DrawLine(
+                    startPoint + forward * previous_x * _viewRadius + right * previous_y * _viewRadius,
+                    startPoint + forward * current_x * _viewRadius + right * current_y * _viewRadius);
+                Gizmos.DrawLine(
+                    startPoint + forward * previous_x * _viewRadius + right * -previous_y * _viewRadius,
+                    startPoint + forward * current_x * _viewRadius + right * -current_y * _viewRadius);
+
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(
+                    startPoint + forward * previous_x * _loseRadius + right * previous_y * _loseRadius,
+                    startPoint + forward * current_x * _loseRadius + right * current_y * _loseRadius);
+                Gizmos.DrawLine(
+                    startPoint + forward * previous_x * _loseRadius + right * -previous_y * _loseRadius,
+                    startPoint + forward * current_x * _loseRadius + right * -current_y * _loseRadius);
+            }
         }
+#endif
     }
 
     public struct SightSenseComponent : IComponentData
     {
-        public float PeripheralVisionAngleCos;
-        public float SightRadiusSquared;
-        public float AutoSuccessRangeSquaredFromLastSeenLocation;
-        public float LoseSightRadiusSquared;
-        public float PointOfViewBackwardOffset;
-        public float NearClippingRadiusSquared;
-        public ushort AffiliationFlags;
+        public float ViewAngleCos;
+        public float ViewRadiusSquared;
+        public float LoseRadiusSquared;
+        public float BackwardOffset;
+        public float NearClipRadiusSquared;
     }
 }
