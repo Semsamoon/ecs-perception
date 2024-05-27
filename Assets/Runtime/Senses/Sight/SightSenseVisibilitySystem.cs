@@ -16,10 +16,27 @@ namespace PerceptionECS
             var buffer = new EntityCommandBuffer(Allocator.Temp);
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (query, entity) in
-                     SystemAPI.Query<RefRW<SightSenseQueryComponent>>().WithDisabled<SightSenseVisibilityTag>().WithEntityAccess())
+#if UNITY_EDITOR
+            foreach (var (_, entity) in
+                     SystemAPI
+                         .Query<RefRO<SightSenseQueryComponent>>()
+                         .WithAll<SightSenseRememberTag>()
+                         .WithDisabled<SightSenseVisibilityTag>()
+                         .WithEntityAccess())
             {
-                var (observer, target, _) = query.ValueRO;
+                UnityEngine.Debug.LogError(
+                    $"Entity {entity} has enabled SightSenseRememberTag but disabled SightSenseVisibilityTag - that is not correct! Disable SightSenseRememberTag or enable SightSenseVisibilityTag.");
+                buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
+            }
+#endif
+
+            foreach (var (query, entity) in
+                     SystemAPI
+                         .Query<RefRW<SightSenseQueryComponent>>()
+                         .WithDisabled<SightSenseVisibilityTag, SightSenseRememberTag>()
+                         .WithEntityAccess())
+            {
+                var (observer, target, _, _) = query.ValueRO;
                 var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(observer);
                 var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(observer);
                 var targetPosition = SystemAPI.GetComponentRO<LocalToWorld>(target).ValueRO.Position;
@@ -33,9 +50,13 @@ namespace PerceptionECS
             }
 
             foreach (var (query, entity) in
-                     SystemAPI.Query<RefRW<SightSenseQueryComponent>>().WithAll<SightSenseVisibilityTag>().WithEntityAccess())
+                     SystemAPI
+                         .Query<RefRW<SightSenseQueryComponent>>()
+                         .WithAll<SightSenseVisibilityTag>()
+                         .WithDisabled<SightSenseRememberTag>()
+                         .WithEntityAccess())
             {
-                var (observer, target, _) = query.ValueRO;
+                var (observer, target, _, _) = query.ValueRO;
                 var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(observer);
                 var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(observer);
                 var targetPosition = SystemAPI.GetComponentRO<LocalToWorld>(target).ValueRO.Position;
@@ -46,7 +67,33 @@ namespace PerceptionECS
                     && IsRayConnectsDirectly(observer, observerLocalToWorld.ValueRO, listener.ValueRO, target, targetPosition, collisionWorld))
                     continue;
 
+                query.ValueRW.RememberTime = listener.ValueRO.RememberTime;
+                buffer.SetComponentEnabled<SightSenseRememberTag>(entity, true);
+            }
+
+            foreach (var (query, entity) in
+                     SystemAPI
+                         .Query<RefRW<SightSenseQueryComponent>>()
+                         .WithAll<SightSenseVisibilityTag, SightSenseRememberTag>()
+                         .WithEntityAccess())
+            {
+                var (observer, target, targetPosition, _) = query.ValueRO;
+                var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(observer);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(observer);
+
+                query.ValueRW.RememberTime -= SystemAPI.Time.DeltaTime;
+
+                if (IsInSightCone(observerLocalToWorld.ValueRO, listener.ValueRO, targetPosition, true)
+                    && IsRayConnectsDirectly(observer, observerLocalToWorld.ValueRO, listener.ValueRO, target, targetPosition, collisionWorld))
+                {
+                    buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
+                    continue;
+                }
+
+                if (query.ValueRW.RememberTime > 0) continue;
+
                 buffer.SetComponentEnabled<SightSenseVisibilityTag>(entity, false);
+                buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
             }
 
             buffer.Playback(state.EntityManager);

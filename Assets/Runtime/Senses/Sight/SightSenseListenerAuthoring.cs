@@ -11,7 +11,7 @@ namespace PerceptionECS
         [SerializeField] private float _nearClipRadius = 0.5f;
         [SerializeField] private float _backwardOffset = 2;
         [SerializeField] private float _viewAngleDegrees = 90;
-        [SerializeField] private float _timeTillForget = 1;
+        [SerializeField] private float _rememberTime = 1;
 
         private class Baker : Baker<SightSenseListenerAuthoring>
         {
@@ -25,7 +25,7 @@ namespace PerceptionECS
                     LoseRadiusSquared = math.pow(authoring._loseRadius, 2),
                     BackwardOffset = authoring._backwardOffset,
                     NearClipRadiusSquared = math.pow(authoring._nearClipRadius, 2),
-                    TimeTillForget = authoring._timeTillForget,
+                    RememberTime = authoring._rememberTime,
                 });
             }
         }
@@ -37,7 +37,7 @@ namespace PerceptionECS
             _viewRadius = math.max(_viewRadius, _nearClipRadius);
             _loseRadius = math.max(_loseRadius, _viewRadius);
             _viewAngleDegrees = math.clamp(_viewAngleDegrees, 0, 360);
-            _timeTillForget = math.max(_timeTillForget, 0);
+            _rememberTime = math.max(_rememberTime, 0);
         }
 
         private void OnDrawGizmos()
@@ -117,6 +117,6 @@ namespace PerceptionECS
         public float LoseRadiusSquared;
         public float BackwardOffset;
         public float NearClipRadiusSquared;
-        public float TimeTillForget;
+        public float RememberTime;
     }
 }
