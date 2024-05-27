@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -6,8 +7,10 @@ using Unity.Transforms;
 
 namespace PerceptionECS
 {
+    [BurstCompile]
     public partial struct SightSenseVisibilitySystem : ISystem
     {
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var buffer = new EntityCommandBuffer(Allocator.Temp);
@@ -49,6 +52,7 @@ namespace PerceptionECS
             buffer.Playback(state.EntityManager);
         }
 
+        [BurstCompile]
         private bool IsInSightCone(
             in LocalToWorld observerLocalToWorld, in SightSenseListenerComponent listener, in float3 targetPosition, bool isExtendToLoseRadius)
         {
@@ -63,6 +67,7 @@ namespace PerceptionECS
             return math.dot(observerLocalToWorld.Forward, direction) >= listener.ViewAngleCos;
         }
 
+        [BurstCompile]
         private bool IsRayConnectsDirectly(
             Entity observer, in LocalToWorld observerLocalToWorld, in SightSenseListenerComponent listener,
             Entity target, in float3 targetPosition, CollisionWorld collisionWorld)
