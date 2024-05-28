@@ -28,6 +28,8 @@ namespace PerceptionECS
                     RememberTime = authoring._rememberTime,
                 });
                 AddComponent<SightSenseListenerRegisterTag>(entity);
+                AddComponent<SightSenseListenerUnregisterTag>(entity);
+                SetComponentEnabled<SightSenseListenerUnregisterTag>(entity, false);
             }
         }
 

@@ -12,6 +12,8 @@ namespace PerceptionECS
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent<SightSenseSourceTag>(entity);
                 AddComponent<SightSenseSourceRegisterTag>(entity);
+                AddComponent<SightSenseSourceUnregisterTag>(entity);
+                SetComponentEnabled<SightSenseSourceUnregisterTag>(entity, false);
             }
         }
     }
