@@ -25,7 +25,7 @@ namespace PerceptionECS.Editor
 
             foreach (var query in _query.ToComponentDataArray<SightSenseQueryComponent>(Allocator.Temp))
             {
-                Gizmos.DrawWireSphere(query.TargetPosition, 0.5f);
+                Gizmos.DrawWireSphere(query.SourcePosition, 0.5f);
             }
         }
     }

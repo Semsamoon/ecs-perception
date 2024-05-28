@@ -36,16 +36,17 @@ namespace PerceptionECS
                          .WithDisabled<SightSenseVisibilityTag, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
-                var (observer, target, _, _) = query.ValueRO;
-                var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(observer);
-                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(observer);
-                var targetPosition = SystemAPI.GetComponentRO<LocalToWorld>(target).ValueRO.Position;
+                var (listenerEntity, sourceEntity) = query.ValueRO;
+                var listenerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(listenerEntity);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(listenerEntity);
+                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(sourceEntity).ValueRO.Position;
 
-                if (!IsInSightCone(observerLocalToWorld.ValueRO, listener.ValueRO, targetPosition, false)
-                    || !IsRayConnectsDirectly(observer, observerLocalToWorld.ValueRO, listener.ValueRO, target, targetPosition, collisionWorld))
+                if (!IsInSightCone(listenerLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, false)
+                    || !IsRayConnectsDirectly(listenerEntity, listenerLocalToWorld.ValueRO, listener.ValueRO, sourceEntity, sourcePosition,
+                        collisionWorld))
                     continue;
 
-                query.ValueRW.TargetPosition = targetPosition;
+                query.ValueRW.SourcePosition = sourcePosition;
                 buffer.SetComponentEnabled<SightSenseVisibilityTag>(entity, true);
             }
 
@@ -56,15 +57,16 @@ namespace PerceptionECS
                          .WithDisabled<SightSenseRememberTag>()
                          .WithEntityAccess())
             {
-                var (observer, target, _, _) = query.ValueRO;
-                var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(observer);
-                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(observer);
-                var targetPosition = SystemAPI.GetComponentRO<LocalToWorld>(target).ValueRO.Position;
+                var (listenerEntity, sourceEntity) = query.ValueRO;
+                var listenerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(listenerEntity);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(listenerEntity);
+                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(sourceEntity).ValueRO.Position;
 
-                query.ValueRW.TargetPosition = targetPosition;
+                query.ValueRW.SourcePosition = sourcePosition;
 
-                if (IsInSightCone(observerLocalToWorld.ValueRO, listener.ValueRO, targetPosition, true)
-                    && IsRayConnectsDirectly(observer, observerLocalToWorld.ValueRO, listener.ValueRO, target, targetPosition, collisionWorld))
+                if (IsInSightCone(listenerLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
+                    && IsRayConnectsDirectly(listenerEntity, listenerLocalToWorld.ValueRO, listener.ValueRO, sourceEntity, sourcePosition,
+                        collisionWorld))
                     continue;
 
                 query.ValueRW.RememberTime = listener.ValueRO.RememberTime;
@@ -77,14 +79,15 @@ namespace PerceptionECS
                          .WithAll<SightSenseVisibilityTag, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
-                var (observer, target, targetPosition, _) = query.ValueRO;
-                var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(observer);
-                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(observer);
+                var (listenerEntity, sourceEntity, sourcePosition) = query.ValueRO;
+                var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(listenerEntity);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(listenerEntity);
 
                 query.ValueRW.RememberTime -= SystemAPI.Time.DeltaTime;
 
-                if (IsInSightCone(observerLocalToWorld.ValueRO, listener.ValueRO, targetPosition, true)
-                    && IsRayConnectsDirectly(observer, observerLocalToWorld.ValueRO, listener.ValueRO, target, targetPosition, collisionWorld))
+                if (IsInSightCone(observerLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
+                    && IsRayConnectsDirectly(listenerEntity, observerLocalToWorld.ValueRO, listener.ValueRO, sourceEntity, sourcePosition,
+                        collisionWorld))
                 {
                     buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
                     continue;
@@ -101,28 +104,28 @@ namespace PerceptionECS
 
         [BurstCompile]
         private bool IsInSightCone(
-            in LocalToWorld observerLocalToWorld, in SightSenseListenerComponent listener, in float3 targetPosition, bool isExtendToLoseRadius)
+            in LocalToWorld listenerLocalToWorld, in SightSenseListenerComponent listener, in float3 sourcePosition, bool isExtendToLoseRadius)
         {
-            var position = observerLocalToWorld.Position + observerLocalToWorld.Forward * -listener.BackwardOffset;
-            var difference = targetPosition - position;
+            var position = listenerLocalToWorld.Position + listenerLocalToWorld.Forward * -listener.BackwardOffset;
+            var difference = sourcePosition - position;
             var distanceSquared = math.lengthsq(difference);
 
             if (distanceSquared > (!isExtendToLoseRadius ? listener.ViewRadiusSquared : listener.LoseRadiusSquared)
                 || distanceSquared < listener.NearClipRadiusSquared) return false;
 
             var direction = difference * math.rsqrt(distanceSquared);
-            return math.dot(observerLocalToWorld.Forward, direction) >= listener.ViewAngleCos;
+            return math.dot(listenerLocalToWorld.Forward, direction) >= listener.ViewAngleCos;
         }
 
         [BurstCompile]
         private bool IsRayConnectsDirectly(
-            Entity observer, in LocalToWorld observerLocalToWorld, in SightSenseListenerComponent listener,
-            Entity target, in float3 targetPosition, CollisionWorld collisionWorld)
+            Entity listenerEntity, in LocalToWorld listenerLocalToWorld, in SightSenseListenerComponent listener,
+            Entity sourceEntity, in float3 sourcePosition, CollisionWorld collisionWorld)
         {
             var raycast = new RaycastInput
             {
-                Start = observerLocalToWorld.Position + observerLocalToWorld.Forward * -listener.BackwardOffset,
-                End = targetPosition,
+                Start = listenerLocalToWorld.Position + listenerLocalToWorld.Forward * -listener.BackwardOffset,
+                End = sourcePosition,
                 Filter = CollisionFilter.Default,
             };
 
@@ -131,7 +134,7 @@ namespace PerceptionECS
 
             foreach (var hit in hits)
             {
-                if (hit.Entity != observer && hit.Entity != target) return false;
+                if (hit.Entity != listenerEntity && hit.Entity != sourceEntity) return false;
             }
 
             return true;

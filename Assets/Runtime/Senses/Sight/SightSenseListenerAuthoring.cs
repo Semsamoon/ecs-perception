@@ -27,6 +27,7 @@ namespace PerceptionECS
                     NearClipRadiusSquared = math.pow(authoring._nearClipRadius, 2),
                     RememberTime = authoring._rememberTime,
                 });
+                AddComponent<SightSenseListenerRegisterTag>(entity);
             }
         }
 
@@ -108,15 +109,5 @@ namespace PerceptionECS
             }
         }
 #endif
-    }
-
-    public struct SightSenseListenerComponent : IComponentData
-    {
-        public float ViewAngleCos;
-        public float ViewRadiusSquared;
-        public float LoseRadiusSquared;
-        public float BackwardOffset;
-        public float NearClipRadiusSquared;
-        public float RememberTime;
     }
 }
