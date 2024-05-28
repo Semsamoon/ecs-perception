@@ -5,7 +5,7 @@ namespace PerceptionECS
 {
     public sealed class SightSenseSourceAuthoring : MonoBehaviour
     {
-        private class Baker : Baker<SightSenseSourceAuthoring>
+        private sealed class Baker : Baker<SightSenseSourceAuthoring>
         {
             public override void Bake(SightSenseSourceAuthoring authoring)
             {

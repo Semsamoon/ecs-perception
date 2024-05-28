@@ -13,7 +13,7 @@ namespace PerceptionECS
         [SerializeField] private float _viewAngleDegrees = 90;
         [SerializeField] private float _rememberTime = 1;
 
-        private class Baker : Baker<SightSenseListenerAuthoring>
+        private sealed class Baker : Baker<SightSenseListenerAuthoring>
         {
             public override void Bake(SightSenseListenerAuthoring authoring)
             {

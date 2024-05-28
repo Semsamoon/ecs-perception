@@ -7,6 +7,7 @@ namespace PerceptionECS
     [BurstCompile]
     public partial struct SightSenseUnregisterSystem : ISystem
     {
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var buffer = new EntityCommandBuffer(Allocator.Temp);
