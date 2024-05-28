@@ -250,6 +250,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1414769256}
   - component: {fileID: 1414769257}
+  - component: {fileID: 1414769258}
   m_Layer: 0
   m_Name: SIght Sense
   m_TagString: Untagged
@@ -290,6 +291,18 @@ MonoBehaviour:
   _backwardOffset: 2
   _viewAngleDegrees: 90
   _rememberTime: 1
+--- !u!114 &1414769258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1414769254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da01981ca2be495a886b01e5ab02751f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1860019309
 GameObject:
   m_ObjectHideFlags: 0

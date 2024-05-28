@@ -11,7 +11,6 @@ namespace PerceptionECS
     {
         private EntityArchetype _queryArchetype;
 
-        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             var queryTypes = new NativeArray<ComponentType>(3, Allocator.Temp);
@@ -38,6 +37,8 @@ namespace PerceptionECS
                              .WithDisabled<SightSenseSourceRegisterTag>()
                              .WithEntityAccess())
                 {
+                    if (entitySource == entityListener) continue;
+
                     var entityQuery = buffer.CreateEntity(_queryArchetype);
                     buffer.SetComponent(entityQuery, new SightSenseQueryComponent
                     {
@@ -66,6 +67,8 @@ namespace PerceptionECS
                              .WithDisabled<SightSenseListenerRegisterTag>()
                              .WithEntityAccess())
                 {
+                    if (entityListener == entitySource) continue;
+
                     var entityQuery = buffer.CreateEntity(_queryArchetype);
                     buffer.SetComponent(entityQuery, new SightSenseQueryComponent
                     {
