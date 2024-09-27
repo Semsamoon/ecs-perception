@@ -2,7 +2,7 @@
 
 namespace PerceptionECS
 {
-    public struct SightSenseListenerComponent : IComponentData
+    public struct ComponentSenseSightReceiver : IComponentData
     {
         public float ViewAngleCos;
         public float ViewRadiusSquared;

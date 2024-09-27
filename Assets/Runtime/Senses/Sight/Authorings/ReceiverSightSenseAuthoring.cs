@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PerceptionECS
 {
-    public sealed class SightSenseListenerAuthoring : MonoBehaviour
+    public sealed class ReceiverSightSenseAuthoring : MonoBehaviour
     {
         [SerializeField] private float _viewRadius = 5;
         [SerializeField] private float _loseRadius = 7;
@@ -13,12 +13,12 @@ namespace PerceptionECS
         [SerializeField] private float _viewAngleDegrees = 90;
         [SerializeField] private float _rememberTime = 1;
 
-        private sealed class Baker : Baker<SightSenseListenerAuthoring>
+        private sealed class Baker : Baker<ReceiverSightSenseAuthoring>
         {
-            public override void Bake(SightSenseListenerAuthoring authoring)
+            public override void Bake(ReceiverSightSenseAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
-                AddComponent(entity, new SightSenseListenerComponent
+                AddComponent(entity, new ComponentSenseSightReceiver
                 {
                     ViewAngleCos = math.cos(math.radians(authoring._viewAngleDegrees / 2)),
                     ViewRadiusSquared = math.pow(authoring._viewRadius, 2),

@@ -8,10 +8,10 @@ namespace PerceptionECS
         public float3 SourcePosition;
         public float Timer;
 
-        public void Deconstruct(out float3 sourcePosition, out float currentDuration)
+        public void Deconstruct(out float3 sourcePosition, out float timer)
         {
             sourcePosition = SourcePosition;
-            currentDuration = Timer;
+            timer = Timer;
         }
     }
 }

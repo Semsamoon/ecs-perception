@@ -2,7 +2,7 @@
 
 namespace PerceptionECS
 {
-    public struct TagSenseSight : IComponentData
+    public struct TagSenseSightInteraction : IComponentData
     {
     }
 }
