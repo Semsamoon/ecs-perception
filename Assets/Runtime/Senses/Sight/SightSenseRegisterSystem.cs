@@ -47,7 +47,7 @@ namespace PerceptionECS
                     });
                     buffer.SetComponent(entityInteraction, new ComponentSenseInteractionRemember
                     {
-                        SourcePosition = float3.zero, Duration = 0
+                        SourcePosition = float3.zero, Timer = 0
                     });
                     buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
                     buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, false);
@@ -81,7 +81,7 @@ namespace PerceptionECS
                     });
                     buffer.SetComponent(entityInteraction, new ComponentSenseInteractionRemember
                     {
-                        SourcePosition = float3.zero, Duration = 0,
+                        SourcePosition = float3.zero, Timer = 0,
                     });
                     buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
                     buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, false);

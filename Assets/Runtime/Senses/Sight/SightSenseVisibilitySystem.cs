@@ -69,7 +69,7 @@ namespace PerceptionECS
                         collisionWorld))
                     continue;
 
-                remember.ValueRW.Duration = listener.ValueRO.RememberTime;
+                remember.ValueRW.Timer = listener.ValueRO.RememberTime;
                 buffer.SetComponentEnabled<TagSenseRemember>(entity, true);
             }
 
@@ -79,7 +79,7 @@ namespace PerceptionECS
                          .WithAll<TagSenseFeel, TagSenseRemember>()
                          .WithEntityAccess())
             {
-                remember.ValueRW.Duration -= SystemAPI.Time.DeltaTime;
+                remember.ValueRW.Timer -= SystemAPI.Time.DeltaTime;
 
                 var (entityReceiver, entitySource) = interaction.ValueRO;
                 var (sourcePosition, rememberTime) = remember.ValueRO;

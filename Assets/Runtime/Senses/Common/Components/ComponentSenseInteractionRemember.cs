@@ -6,12 +6,12 @@ namespace PerceptionECS
     public struct ComponentSenseInteractionRemember : IComponentData
     {
         public float3 SourcePosition;
-        public float Duration;
+        public float Timer;
 
-        public void Deconstruct(out float3 sourcePosition, out float duration)
+        public void Deconstruct(out float3 sourcePosition, out float currentDuration)
         {
             sourcePosition = SourcePosition;
-            duration = Duration;
+            currentDuration = Timer;
         }
     }
 }
