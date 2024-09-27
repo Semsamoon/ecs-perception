@@ -17,7 +17,7 @@ namespace PerceptionECS
             queryTypes[0] = typeof(ComponentSenseInteraction);
             queryTypes[1] = typeof(ComponentSenseInteractionRemember);
             queryTypes[2] = typeof(TagSenseFeel);
-            queryTypes[3] = typeof(SightSenseRememberTag);
+            queryTypes[3] = typeof(TagSenseRemember);
             _interactionArchetype = state.EntityManager.CreateArchetype(queryTypes);
         }
 
@@ -50,7 +50,7 @@ namespace PerceptionECS
                         SourcePosition = float3.zero, Duration = 0
                     });
                     buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
-                    buffer.SetComponentEnabled<SightSenseRememberTag>(entityInteraction, false);
+                    buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, false);
                 }
 
                 buffer.SetComponentEnabled<SightSenseListenerRegisterTag>(entityReceiver, false);
@@ -84,7 +84,7 @@ namespace PerceptionECS
                         SourcePosition = float3.zero, Duration = 0,
                     });
                     buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
-                    buffer.SetComponentEnabled<SightSenseRememberTag>(entityInteraction, false);
+                    buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, false);
                 }
 
                 buffer.SetComponentEnabled<SightSenseSourceRegisterTag>(entitySource, false);

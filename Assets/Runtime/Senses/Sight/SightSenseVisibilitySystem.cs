@@ -20,20 +20,20 @@ namespace PerceptionECS
             foreach (var (_, entity) in
                      SystemAPI
                          .Query<RefRO<ComponentSenseInteractionRemember>>()
-                         .WithAll<SightSenseRememberTag>()
+                         .WithAll<TagSenseRemember>()
                          .WithDisabled<TagSenseFeel>()
                          .WithEntityAccess())
             {
                 UnityEngine.Debug.LogError(
                     $"Entity {entity} has enabled SightSenseRememberTag but disabled SightSenseVisibilityTag - that is not correct! Disable SightSenseRememberTag or enable SightSenseVisibilityTag.");
-                buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
+                buffer.SetComponentEnabled<TagSenseRemember>(entity, false);
             }
 #endif
 
             foreach (var (interaction, remember, entityInteraction) in
                      SystemAPI
                          .Query<RefRW<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
-                         .WithDisabled<TagSenseFeel, SightSenseRememberTag>()
+                         .WithDisabled<TagSenseFeel, TagSenseRemember>()
                          .WithEntityAccess())
             {
                 var (entityReceiver, entitySource) = interaction.ValueRO;
@@ -54,7 +54,7 @@ namespace PerceptionECS
                      SystemAPI
                          .Query<RefRW<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
                          .WithAll<TagSenseFeel>()
-                         .WithDisabled<SightSenseRememberTag>()
+                         .WithDisabled<TagSenseRemember>()
                          .WithEntityAccess())
             {
                 var (entityReceiver, entitySource) = interaction.ValueRO;
@@ -70,13 +70,13 @@ namespace PerceptionECS
                     continue;
 
                 remember.ValueRW.Duration = listener.ValueRO.RememberTime;
-                buffer.SetComponentEnabled<SightSenseRememberTag>(entity, true);
+                buffer.SetComponentEnabled<TagSenseRemember>(entity, true);
             }
 
             foreach (var (interaction, remember, entity) in
                      SystemAPI
                          .Query<RefRW<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
-                         .WithAll<TagSenseFeel, SightSenseRememberTag>()
+                         .WithAll<TagSenseFeel, TagSenseRemember>()
                          .WithEntityAccess())
             {
                 remember.ValueRW.Duration -= SystemAPI.Time.DeltaTime;
@@ -90,14 +90,14 @@ namespace PerceptionECS
                     && IsRayConnectsDirectly(entityReceiver, receiverLocalToWorld.ValueRO, listener.ValueRO, entitySource, sourcePosition,
                         collisionWorld))
                 {
-                    buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
+                    buffer.SetComponentEnabled<TagSenseRemember>(entity, false);
                     continue;
                 }
 
                 if (rememberTime > 0) continue;
 
                 buffer.SetComponentEnabled<TagSenseFeel>(entity, false);
-                buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
+                buffer.SetComponentEnabled<TagSenseRemember>(entity, false);
             }
 
             buffer.Playback(state.EntityManager);
