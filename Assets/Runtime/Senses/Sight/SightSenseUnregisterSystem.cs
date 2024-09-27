@@ -17,14 +17,14 @@ namespace PerceptionECS
                          .Query<SightSenseListenerUnregisterTag>()
                          .WithEntityAccess())
             {
-                foreach (var (query, entityQuery) in
+                foreach (var (interaction, entityInteraction) in
                          SystemAPI
-                             .Query<SightSenseQueryComponent>()
+                             .Query<ComponentSenseInteraction>()
                              .WithEntityAccess())
                 {
-                    if (query.Listener != entityListener) continue;
+                    if (interaction.Receiver != entityListener) continue;
 
-                    buffer.DestroyEntity(entityQuery);
+                    buffer.DestroyEntity(entityInteraction);
                 }
 
                 buffer.SetComponentEnabled<SightSenseListenerUnregisterTag>(entityListener, false);
@@ -39,14 +39,14 @@ namespace PerceptionECS
                          .Query<SightSenseSourceUnregisterTag>()
                          .WithEntityAccess())
             {
-                foreach (var (query, entityQuery) in
+                foreach (var (interaction, entityInteraction) in
                          SystemAPI
-                             .Query<SightSenseQueryComponent>()
+                             .Query<ComponentSenseInteraction>()
                              .WithEntityAccess())
                 {
-                    if (query.Source != entitySource) continue;
+                    if (interaction.Source != entitySource) continue;
 
-                    buffer.DestroyEntity(entityQuery);
+                    buffer.DestroyEntity(entityInteraction);
                 }
 
                 buffer.SetComponentEnabled<SightSenseSourceUnregisterTag>(entitySource, false);

@@ -30,70 +30,71 @@ namespace PerceptionECS
             }
 #endif
 
-            foreach (var (query, entity) in
+            foreach (var (interaction, sightQuery, entityInteraction) in
                      SystemAPI
-                         .Query<RefRW<SightSenseQueryComponent>>()
+                         .Query<RefRW<ComponentSenseInteraction>, RefRW<SightSenseQueryComponent>>()
                          .WithDisabled<TagSenseFeel, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
-                var (listenerEntity, sourceEntity) = query.ValueRO;
-                var listenerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(listenerEntity);
-                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(listenerEntity);
-                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(sourceEntity).ValueRO.Position;
+                var (entityReceiver, entitySource) = interaction.ValueRO;
+                var receiverLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(entityReceiver);
+                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO.Position;
 
-                if (!IsInSightCone(listenerLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, false)
-                    || !IsRayConnectsDirectly(listenerEntity, listenerLocalToWorld.ValueRO, listener.ValueRO, sourceEntity, sourcePosition,
+                if (!IsInSightCone(receiverLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, false)
+                    || !IsRayConnectsDirectly(entityReceiver, receiverLocalToWorld.ValueRO, listener.ValueRO, entitySource, sourcePosition,
                         collisionWorld))
                     continue;
 
-                query.ValueRW.SourcePosition = sourcePosition;
-                buffer.SetComponentEnabled<TagSenseFeel>(entity, true);
+                sightQuery.ValueRW.SourcePosition = sourcePosition;
+                buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, true);
             }
 
-            foreach (var (query, entity) in
+            foreach (var (interaction, sightQuery, entity) in
                      SystemAPI
-                         .Query<RefRW<SightSenseQueryComponent>>()
+                         .Query<RefRW<ComponentSenseInteraction>, RefRW<SightSenseQueryComponent>>()
                          .WithAll<TagSenseFeel>()
                          .WithDisabled<SightSenseRememberTag>()
                          .WithEntityAccess())
             {
-                var (listenerEntity, sourceEntity) = query.ValueRO;
-                var listenerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(listenerEntity);
-                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(listenerEntity);
-                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(sourceEntity).ValueRO.Position;
+                var (entityReceiver, entitySource) = interaction.ValueRO;
+                var receiverLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(entityReceiver);
+                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO.Position;
 
-                query.ValueRW.SourcePosition = sourcePosition;
+                sightQuery.ValueRW.SourcePosition = sourcePosition;
 
-                if (IsInSightCone(listenerLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
-                    && IsRayConnectsDirectly(listenerEntity, listenerLocalToWorld.ValueRO, listener.ValueRO, sourceEntity, sourcePosition,
+                if (IsInSightCone(receiverLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
+                    && IsRayConnectsDirectly(entityReceiver, receiverLocalToWorld.ValueRO, listener.ValueRO, entitySource, sourcePosition,
                         collisionWorld))
                     continue;
 
-                query.ValueRW.RememberTime = listener.ValueRO.RememberTime;
+                sightQuery.ValueRW.RememberTime = listener.ValueRO.RememberTime;
                 buffer.SetComponentEnabled<SightSenseRememberTag>(entity, true);
             }
 
-            foreach (var (query, entity) in
+            foreach (var (interaction, sightQuery, entity) in
                      SystemAPI
-                         .Query<RefRW<SightSenseQueryComponent>>()
+                         .Query<RefRW<ComponentSenseInteraction>, RefRW<SightSenseQueryComponent>>()
                          .WithAll<TagSenseFeel, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
-                var (listenerEntity, sourceEntity, sourcePosition) = query.ValueRO;
-                var observerLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(listenerEntity);
-                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(listenerEntity);
+                var (entityReceiver, entitySource) = interaction.ValueRO;
+                var (sourcePosition, _) = sightQuery.ValueRO;
+                var receiverLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver);
+                var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(entityReceiver);
 
-                query.ValueRW.RememberTime -= SystemAPI.Time.DeltaTime;
+                sightQuery.ValueRW.RememberTime -= SystemAPI.Time.DeltaTime;
 
-                if (IsInSightCone(observerLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
-                    && IsRayConnectsDirectly(listenerEntity, observerLocalToWorld.ValueRO, listener.ValueRO, sourceEntity, sourcePosition,
+                if (IsInSightCone(receiverLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
+                    && IsRayConnectsDirectly(entityReceiver, receiverLocalToWorld.ValueRO, listener.ValueRO, entitySource, sourcePosition,
                         collisionWorld))
                 {
                     buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
                     continue;
                 }
 
-                if (query.ValueRW.RememberTime > 0) continue;
+                if (sightQuery.ValueRW.RememberTime > 0) continue;
 
                 buffer.SetComponentEnabled<TagSenseFeel>(entity, false);
                 buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
