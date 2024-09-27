@@ -21,7 +21,7 @@ namespace PerceptionECS
                      SystemAPI
                          .Query<RefRO<SightSenseQueryComponent>>()
                          .WithAll<SightSenseRememberTag>()
-                         .WithDisabled<SightSenseVisibilityTag>()
+                         .WithDisabled<TagSenseFeel>()
                          .WithEntityAccess())
             {
                 UnityEngine.Debug.LogError(
@@ -33,7 +33,7 @@ namespace PerceptionECS
             foreach (var (query, entity) in
                      SystemAPI
                          .Query<RefRW<SightSenseQueryComponent>>()
-                         .WithDisabled<SightSenseVisibilityTag, SightSenseRememberTag>()
+                         .WithDisabled<TagSenseFeel, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
                 var (listenerEntity, sourceEntity) = query.ValueRO;
@@ -47,13 +47,13 @@ namespace PerceptionECS
                     continue;
 
                 query.ValueRW.SourcePosition = sourcePosition;
-                buffer.SetComponentEnabled<SightSenseVisibilityTag>(entity, true);
+                buffer.SetComponentEnabled<TagSenseFeel>(entity, true);
             }
 
             foreach (var (query, entity) in
                      SystemAPI
                          .Query<RefRW<SightSenseQueryComponent>>()
-                         .WithAll<SightSenseVisibilityTag>()
+                         .WithAll<TagSenseFeel>()
                          .WithDisabled<SightSenseRememberTag>()
                          .WithEntityAccess())
             {
@@ -76,7 +76,7 @@ namespace PerceptionECS
             foreach (var (query, entity) in
                      SystemAPI
                          .Query<RefRW<SightSenseQueryComponent>>()
-                         .WithAll<SightSenseVisibilityTag, SightSenseRememberTag>()
+                         .WithAll<TagSenseFeel, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
                 var (listenerEntity, sourceEntity, sourcePosition) = query.ValueRO;
@@ -95,7 +95,7 @@ namespace PerceptionECS
 
                 if (query.ValueRW.RememberTime > 0) continue;
 
-                buffer.SetComponentEnabled<SightSenseVisibilityTag>(entity, false);
+                buffer.SetComponentEnabled<TagSenseFeel>(entity, false);
                 buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
             }
 

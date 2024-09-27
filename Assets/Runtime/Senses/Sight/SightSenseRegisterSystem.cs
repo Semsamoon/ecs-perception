@@ -15,7 +15,7 @@ namespace PerceptionECS
         {
             var queryTypes = new NativeArray<ComponentType>(3, Allocator.Temp);
             queryTypes[0] = typeof(SightSenseQueryComponent);
-            queryTypes[1] = typeof(SightSenseVisibilityTag);
+            queryTypes[1] = typeof(TagSenseFeel);
             queryTypes[2] = typeof(SightSenseRememberTag);
             _queryArchetype = state.EntityManager.CreateArchetype(queryTypes);
         }
@@ -44,7 +44,7 @@ namespace PerceptionECS
                     {
                         Listener = entityListener, Source = entitySource, SourcePosition = float3.zero, RememberTime = 0,
                     });
-                    buffer.SetComponentEnabled<SightSenseVisibilityTag>(entityQuery, false);
+                    buffer.SetComponentEnabled<TagSenseFeel>(entityQuery, false);
                     buffer.SetComponentEnabled<SightSenseRememberTag>(entityQuery, false);
                 }
 
@@ -74,7 +74,7 @@ namespace PerceptionECS
                     {
                         Listener = entityListener, Source = entitySource, SourcePosition = float3.zero, RememberTime = 0,
                     });
-                    buffer.SetComponentEnabled<SightSenseVisibilityTag>(entityQuery, false);
+                    buffer.SetComponentEnabled<TagSenseFeel>(entityQuery, false);
                     buffer.SetComponentEnabled<SightSenseRememberTag>(entityQuery, false);
                 }
 

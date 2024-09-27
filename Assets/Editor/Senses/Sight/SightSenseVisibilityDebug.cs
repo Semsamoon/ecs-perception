@@ -14,7 +14,7 @@ namespace PerceptionECS.Editor
             _manager = World.DefaultGameObjectInjectionWorld.EntityManager;
             _query = _manager.CreateEntityQuery(
                 ComponentType.ReadOnly<SightSenseQueryComponent>(),
-                ComponentType.ReadOnly<SightSenseVisibilityTag>());
+                ComponentType.ReadOnly<TagSenseFeel>());
         }
 
         private void OnDrawGizmos()
