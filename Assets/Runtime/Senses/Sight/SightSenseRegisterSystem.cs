@@ -15,7 +15,7 @@ namespace PerceptionECS
         {
             var queryTypes = new NativeArray<ComponentType>(4, Allocator.Temp);
             queryTypes[0] = typeof(ComponentSenseInteraction);
-            queryTypes[1] = typeof(SightSenseQueryComponent);
+            queryTypes[1] = typeof(ComponentSenseInteractionRemember);
             queryTypes[2] = typeof(TagSenseFeel);
             queryTypes[3] = typeof(SightSenseRememberTag);
             _interactionArchetype = state.EntityManager.CreateArchetype(queryTypes);
@@ -26,7 +26,7 @@ namespace PerceptionECS
         {
             var buffer = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (_, entityListener) in
+            foreach (var (_, entityReceiver) in
                      SystemAPI
                          .Query<SightSenseListenerComponent>()
                          .WithAll<SightSenseListenerRegisterTag>()
@@ -38,22 +38,22 @@ namespace PerceptionECS
                              .WithDisabled<SightSenseSourceRegisterTag>()
                              .WithEntityAccess())
                 {
-                    if (entitySource == entityListener) continue;
+                    if (entitySource == entityReceiver) continue;
 
                     var entityInteraction = buffer.CreateEntity(_interactionArchetype);
                     buffer.SetComponent(entityInteraction, new ComponentSenseInteraction
                     {
-                        Receiver = entityListener, Source = entitySource
+                        Receiver = entityReceiver, Source = entitySource
                     });
-                    buffer.SetComponent(entityInteraction, new SightSenseQueryComponent
+                    buffer.SetComponent(entityInteraction, new ComponentSenseInteractionRemember
                     {
-                        SourcePosition = float3.zero, RememberTime = 0
+                        SourcePosition = float3.zero, Duration = 0
                     });
                     buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
                     buffer.SetComponentEnabled<SightSenseRememberTag>(entityInteraction, false);
                 }
 
-                buffer.SetComponentEnabled<SightSenseListenerRegisterTag>(entityListener, false);
+                buffer.SetComponentEnabled<SightSenseListenerRegisterTag>(entityReceiver, false);
             }
 
             buffer.Playback(state.EntityManager);
@@ -66,22 +66,22 @@ namespace PerceptionECS
                          .WithAll<SightSenseSourceRegisterTag>()
                          .WithEntityAccess())
             {
-                foreach (var (_, entityListener) in
+                foreach (var (_, entityReceiver) in
                          SystemAPI
                              .Query<SightSenseListenerComponent>()
                              .WithDisabled<SightSenseListenerRegisterTag>()
                              .WithEntityAccess())
                 {
-                    if (entityListener == entitySource) continue;
+                    if (entityReceiver == entitySource) continue;
 
                     var entityInteraction = buffer.CreateEntity(_interactionArchetype);
                     buffer.SetComponent(entityInteraction, new ComponentSenseInteraction
                     {
-                        Receiver = entityListener, Source = entitySource
+                        Receiver = entityReceiver, Source = entitySource
                     });
-                    buffer.SetComponent(entityInteraction, new SightSenseQueryComponent
+                    buffer.SetComponent(entityInteraction, new ComponentSenseInteractionRemember
                     {
-                        SourcePosition = float3.zero, RememberTime = 0,
+                        SourcePosition = float3.zero, Duration = 0,
                     });
                     buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
                     buffer.SetComponentEnabled<SightSenseRememberTag>(entityInteraction, false);

@@ -19,7 +19,7 @@ namespace PerceptionECS
 #if UNITY_EDITOR
             foreach (var (_, entity) in
                      SystemAPI
-                         .Query<RefRO<SightSenseQueryComponent>>()
+                         .Query<RefRO<ComponentSenseInteractionRemember>>()
                          .WithAll<SightSenseRememberTag>()
                          .WithDisabled<TagSenseFeel>()
                          .WithEntityAccess())
@@ -30,9 +30,9 @@ namespace PerceptionECS
             }
 #endif
 
-            foreach (var (interaction, sightQuery, entityInteraction) in
+            foreach (var (interaction, remember, entityInteraction) in
                      SystemAPI
-                         .Query<RefRW<ComponentSenseInteraction>, RefRW<SightSenseQueryComponent>>()
+                         .Query<RefRW<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
                          .WithDisabled<TagSenseFeel, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
@@ -46,13 +46,13 @@ namespace PerceptionECS
                         collisionWorld))
                     continue;
 
-                sightQuery.ValueRW.SourcePosition = sourcePosition;
+                remember.ValueRW.SourcePosition = sourcePosition;
                 buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, true);
             }
 
-            foreach (var (interaction, sightQuery, entity) in
+            foreach (var (interaction, remember, entity) in
                      SystemAPI
-                         .Query<RefRW<ComponentSenseInteraction>, RefRW<SightSenseQueryComponent>>()
+                         .Query<RefRW<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
                          .WithAll<TagSenseFeel>()
                          .WithDisabled<SightSenseRememberTag>()
                          .WithEntityAccess())
@@ -62,29 +62,29 @@ namespace PerceptionECS
                 var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(entityReceiver);
                 var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO.Position;
 
-                sightQuery.ValueRW.SourcePosition = sourcePosition;
+                remember.ValueRW.SourcePosition = sourcePosition;
 
                 if (IsInSightCone(receiverLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
                     && IsRayConnectsDirectly(entityReceiver, receiverLocalToWorld.ValueRO, listener.ValueRO, entitySource, sourcePosition,
                         collisionWorld))
                     continue;
 
-                sightQuery.ValueRW.RememberTime = listener.ValueRO.RememberTime;
+                remember.ValueRW.Duration = listener.ValueRO.RememberTime;
                 buffer.SetComponentEnabled<SightSenseRememberTag>(entity, true);
             }
 
-            foreach (var (interaction, sightQuery, entity) in
+            foreach (var (interaction, remember, entity) in
                      SystemAPI
-                         .Query<RefRW<ComponentSenseInteraction>, RefRW<SightSenseQueryComponent>>()
+                         .Query<RefRW<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
                          .WithAll<TagSenseFeel, SightSenseRememberTag>()
                          .WithEntityAccess())
             {
+                remember.ValueRW.Duration -= SystemAPI.Time.DeltaTime;
+
                 var (entityReceiver, entitySource) = interaction.ValueRO;
-                var (sourcePosition, _) = sightQuery.ValueRO;
+                var (sourcePosition, rememberTime) = remember.ValueRO;
                 var receiverLocalToWorld = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver);
                 var listener = SystemAPI.GetComponentRO<SightSenseListenerComponent>(entityReceiver);
-
-                sightQuery.ValueRW.RememberTime -= SystemAPI.Time.DeltaTime;
 
                 if (IsInSightCone(receiverLocalToWorld.ValueRO, listener.ValueRO, sourcePosition, true)
                     && IsRayConnectsDirectly(entityReceiver, receiverLocalToWorld.ValueRO, listener.ValueRO, entitySource, sourcePosition,
@@ -94,7 +94,7 @@ namespace PerceptionECS
                     continue;
                 }
 
-                if (sightQuery.ValueRW.RememberTime > 0) continue;
+                if (rememberTime > 0) continue;
 
                 buffer.SetComponentEnabled<TagSenseFeel>(entity, false);
                 buffer.SetComponentEnabled<SightSenseRememberTag>(entity, false);
@@ -105,9 +105,9 @@ namespace PerceptionECS
 
         [BurstCompile]
         private bool IsInSightCone(
-            in LocalToWorld listenerLocalToWorld, in SightSenseListenerComponent listener, in float3 sourcePosition, bool isExtendToLoseRadius)
+            in LocalToWorld receiverLocalToWorld, in SightSenseListenerComponent listener, in float3 sourcePosition, bool isExtendToLoseRadius)
         {
-            var position = listenerLocalToWorld.Position + listenerLocalToWorld.Forward * -listener.BackwardOffset;
+            var position = receiverLocalToWorld.Position + receiverLocalToWorld.Forward * -listener.BackwardOffset;
             var difference = sourcePosition - position;
             var distanceSquared = math.lengthsq(difference);
 
@@ -115,17 +115,17 @@ namespace PerceptionECS
                 || distanceSquared < listener.NearClipRadiusSquared) return false;
 
             var direction = difference * math.rsqrt(distanceSquared);
-            return math.dot(listenerLocalToWorld.Forward, direction) >= listener.ViewAngleCos;
+            return math.dot(receiverLocalToWorld.Forward, direction) >= listener.ViewAngleCos;
         }
 
         [BurstCompile]
         private bool IsRayConnectsDirectly(
-            Entity listenerEntity, in LocalToWorld listenerLocalToWorld, in SightSenseListenerComponent listener,
-            Entity sourceEntity, in float3 sourcePosition, CollisionWorld collisionWorld)
+            Entity entityReceiver, in LocalToWorld receiverLocalToWorld, in SightSenseListenerComponent listener,
+            Entity entitySource, in float3 sourcePosition, CollisionWorld collisionWorld)
         {
             var raycast = new RaycastInput
             {
-                Start = listenerLocalToWorld.Position + listenerLocalToWorld.Forward * -listener.BackwardOffset,
+                Start = receiverLocalToWorld.Position + receiverLocalToWorld.Forward * -listener.BackwardOffset,
                 End = sourcePosition,
                 Filter = CollisionFilter.Default,
             };
@@ -135,7 +135,7 @@ namespace PerceptionECS
 
             foreach (var hit in hits)
             {
-                if (hit.Entity != listenerEntity && hit.Entity != sourceEntity) return false;
+                if (hit.Entity != entityReceiver && hit.Entity != entitySource) return false;
             }
 
             return true;

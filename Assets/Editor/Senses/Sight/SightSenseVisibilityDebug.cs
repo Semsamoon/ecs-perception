@@ -13,7 +13,7 @@ namespace PerceptionECS.Editor
         {
             _manager = World.DefaultGameObjectInjectionWorld.EntityManager;
             _query = _manager.CreateEntityQuery(
-                ComponentType.ReadOnly<SightSenseQueryComponent>(),
+                ComponentType.ReadOnly<ComponentSenseInteractionRemember>(),
                 ComponentType.ReadOnly<TagSenseFeel>());
         }
 
@@ -23,7 +23,7 @@ namespace PerceptionECS.Editor
 
             Gizmos.color = Color.green;
 
-            foreach (var query in _query.ToComponentDataArray<SightSenseQueryComponent>(Allocator.Temp))
+            foreach (var query in _query.ToComponentDataArray<ComponentSenseInteractionRemember>(Allocator.Temp))
             {
                 Gizmos.DrawWireSphere(query.SourcePosition, 0.5f);
             }
