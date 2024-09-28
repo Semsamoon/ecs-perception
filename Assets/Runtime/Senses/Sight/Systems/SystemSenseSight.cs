@@ -7,7 +7,7 @@ using Unity.Transforms;
 
 namespace PerceptionECS
 {
-    [BurstCompile]
+    [BurstCompile, UpdateAfter(typeof(SystemSenseTransition)), UpdateBefore(typeof(SystemSenseRemember))]
     public partial struct SystemSenseSight : ISystem
     {
         [BurstCompile]
@@ -16,82 +16,42 @@ namespace PerceptionECS
             var buffer = new EntityCommandBuffer(Allocator.Temp);
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (interaction, remember, entityInteraction) in
-                     SystemAPI
-                         .Query<RefRO<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
-                         .WithAll<TagSenseNeglect, TagSenseSightInteraction>()
-                         .WithEntityAccess())
+            foreach (var (interaction, entityInteraction) in
+                     SystemAPI.Query<ComponentSenseInteraction>().WithAll<TagSenseNeglect, TagSenseSightInteraction>().WithEntityAccess())
             {
-                var (entityReceiver, entitySource) = interaction.ValueRO;
+                var (entityReceiver, entitySource) = interaction;
                 var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
                 var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver).ValueRO;
                 var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO.Position;
 
                 if (!IsInSightCone(receiverTransform, receiver, sourcePosition, false)
-                    || !IsRayConnectsDirectly(entityReceiver, receiverTransform, receiver, entitySource, sourcePosition, collisionWorld))
+                    || !IsRayConnectsDirectly(entityReceiver, receiverTransform, receiver, entitySource, sourcePosition, ref collisionWorld))
                 {
                     continue;
                 }
 
-                remember.ValueRW.SourcePosition = sourcePosition;
                 buffer.SetComponentEnabled<TagSenseNeglect>(entityInteraction, false);
                 buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, true);
+                buffer.SetComponentEnabled<TagSenseTransitionNeglectToFeel>(entityInteraction, true);
             }
 
-            foreach (var (interaction, remember, entityInteraction) in
-                     SystemAPI
-                         .Query<RefRO<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
-                         .WithAll<TagSenseFeel, TagSenseSightInteraction>()
-                         .WithEntityAccess())
+            foreach (var (interaction, entityInteraction) in
+                     SystemAPI.Query<ComponentSenseInteraction>().WithAll<TagSenseFeel, TagSenseSightInteraction>().WithEntityAccess())
             {
-                var (entityReceiver, entitySource) = interaction.ValueRO;
+                var (entityReceiver, entitySource) = interaction;
                 var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
                 var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver).ValueRO;
-                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO.Position;
+                var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO;
 
-
-                if (IsInSightCone(receiverTransform, receiver, sourcePosition, true)
-                    && IsRayConnectsDirectly(entityReceiver, receiverTransform, receiver, entitySource, sourcePosition, collisionWorld))
+                if (IsInSightCone(receiverTransform, receiver, sourceTransform.Position, true)
+                    && IsRayConnectsDirectly(entityReceiver, receiverTransform, receiver, entitySource, sourceTransform.Position, ref collisionWorld))
                 {
-                    remember.ValueRW.SourcePosition = sourcePosition;
                     continue;
                 }
 
-                remember.ValueRW.Timer = receiver.RememberTime;
                 buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, false);
-                buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, true);
-            }
-
-            foreach (var (interaction, remember, entityInteraction) in
-                     SystemAPI
-                         .Query<RefRO<ComponentSenseInteraction>, RefRW<ComponentSenseInteractionRemember>>()
-                         .WithAll<TagSenseRemember, TagSenseSightInteraction>()
-                         .WithEntityAccess())
-            {
-                remember.ValueRW.Timer -= SystemAPI.Time.DeltaTime;
-
-                var (entityReceiver, entitySource) = interaction.ValueRO;
-                var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
-                var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiver).ValueRO;
-                var sourcePosition = SystemAPI.GetComponentRO<LocalToWorld>(entitySource).ValueRO.Position;
-                var (_, timer) = remember.ValueRO;
-
-                if (IsInSightCone(receiverTransform, receiver, sourcePosition, true)
-                    && IsRayConnectsDirectly(entityReceiver, receiverTransform, receiver, entitySource, sourcePosition, collisionWorld))
-                {
-                    remember.ValueRW.SourcePosition = sourcePosition;
-                    buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, false);
-                    buffer.SetComponentEnabled<TagSenseFeel>(entityInteraction, true);
-                    continue;
-                }
-
-                if (timer > 0)
-                {
-                    continue;
-                }
-
-                buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, false);
                 buffer.SetComponentEnabled<TagSenseNeglect>(entityInteraction, true);
+                buffer.SetComponentEnabled<TagSenseTransitionFeelToNeglect>(entityInteraction, true);
             }
 
             buffer.Playback(state.EntityManager);
@@ -99,7 +59,8 @@ namespace PerceptionECS
 
         [BurstCompile]
         private bool IsInSightCone(
-            in LocalToWorld receiverTransform, in ComponentSenseSightReceiver receiver, in float3 sourcePosition, bool isExtendToLoseRadius)
+            in LocalToWorld receiverTransform, in ComponentSenseSightReceiver receiver,
+            in float3 sourcePosition, bool isExtendToLoseRadius)
         {
             var position = receiverTransform.Position + receiverTransform.Forward * -receiver.BackwardOffset;
             var difference = sourcePosition - position;
@@ -118,7 +79,7 @@ namespace PerceptionECS
         [BurstCompile]
         private bool IsRayConnectsDirectly(
             Entity entityReceiver, in LocalToWorld receiverTransform, in ComponentSenseSightReceiver receiver,
-            Entity entitySource, in float3 sourcePosition, CollisionWorld collisionWorld)
+            Entity entitySource, in float3 sourcePosition, ref CollisionWorld collisionWorld)
         {
             var raycast = new RaycastInput
             {

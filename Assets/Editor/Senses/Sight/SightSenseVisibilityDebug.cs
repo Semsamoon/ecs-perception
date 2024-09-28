@@ -1,5 +1,6 @@
 ﻿using Unity.Collections;
 using Unity.Entities;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace PerceptionECS.Editor
@@ -14,31 +15,31 @@ namespace PerceptionECS.Editor
         {
             _manager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-            _interactionFeel = _manager.CreateEntityQuery(
-                ComponentType.ReadOnly<ComponentSenseInteractionRemember>(),
-                ComponentType.ReadOnly<TagSenseFeel>());
-
-            _interactionRemember = _manager.CreateEntityQuery(
-                ComponentType.ReadOnly<ComponentSenseInteractionRemember>(),
-                ComponentType.ReadOnly<TagSenseRemember>());
+            _interactionFeel = _manager.CreateEntityQuery(typeof(ComponentSenseInteraction), typeof(TagSenseFeel));
+            _interactionRemember = _manager.CreateEntityQuery(typeof(ComponentSenseRemember), typeof(TagSenseRemember));
         }
 
         private void OnDrawGizmos()
         {
-            if (!Application.isPlaying) return;
+            if (!Application.isPlaying)
+            {
+                return;
+            }
 
             Gizmos.color = Color.green;
 
-            foreach (var remember in _interactionFeel.ToComponentDataArray<ComponentSenseInteractionRemember>(Allocator.Temp))
+            foreach (var interaction in
+                     _interactionFeel.ToComponentDataArray<ComponentSenseInteraction>(Allocator.Temp))
             {
-                Gizmos.DrawWireSphere(remember.SourcePosition, 0.5f);
+                Gizmos.DrawWireSphere(_manager.GetComponentData<LocalToWorld>(interaction.Source).Position, 0.5f);
             }
 
             Gizmos.color = Color.yellow;
 
-            foreach (var remember in _interactionRemember.ToComponentDataArray<ComponentSenseInteractionRemember>(Allocator.Temp))
+            foreach (var remember in
+                     _interactionRemember.ToComponentDataArray<ComponentSenseRemember>(Allocator.Temp))
             {
-                Gizmos.DrawWireSphere(remember.SourcePosition, 0.5f);
+                Gizmos.DrawWireSphere(remember.SourceTransform.Position, 0.5f);
             }
         }
     }
