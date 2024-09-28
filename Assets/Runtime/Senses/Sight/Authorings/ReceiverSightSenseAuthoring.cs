@@ -25,11 +25,18 @@ namespace PerceptionECS
                     LoseRadiusSquared = math.pow(authoring._loseRadius, 2),
                     BackwardOffset = authoring._backwardOffset,
                     NearClipRadiusSquared = math.pow(authoring._nearClipRadius, 2),
-                    RememberTime = authoring._rememberTime,
                 });
-                AddComponent<SightSenseListenerRegisterTag>(entity);
+                AddComponent<TagSenseRegisterReceiver>(entity);
                 AddComponent<SightSenseListenerUnregisterTag>(entity);
                 SetComponentEnabled<SightSenseListenerUnregisterTag>(entity, false);
+
+                if (authoring._rememberTime > 0)
+                {
+                    AddComponent(entity, new ComponentSenseReceiverRemember
+                    {
+                        RememberTime = authoring._rememberTime,
+                    });
+                }
             }
         }
 

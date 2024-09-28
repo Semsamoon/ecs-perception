@@ -9,6 +9,5 @@ namespace PerceptionECS
         public float LoseRadiusSquared;
         public float BackwardOffset;
         public float NearClipRadiusSquared;
-        public float RememberTime;
     }
 }

@@ -26,7 +26,7 @@ namespace PerceptionECS
                 var (entityReceiver, _) = interaction;
                 ref var rememberValue = ref remember.ValueRW;
 
-                rememberValue.Timer = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO.RememberTime;
+                rememberValue.Timer = SystemAPI.GetComponentRO<ComponentSenseReceiverRemember>(entityReceiver).ValueRO.RememberTime;
 
                 buffer.SetComponentEnabled<TagSenseRemember>(entityInteraction, true);
             }

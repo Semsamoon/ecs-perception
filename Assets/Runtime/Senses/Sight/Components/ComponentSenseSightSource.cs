@@ -2,7 +2,7 @@
 
 namespace PerceptionECS
 {
-    public struct SightSenseSourceTag : IComponentData
+    public struct ComponentSenseSightSource : IComponentData
     {
     }
 }
