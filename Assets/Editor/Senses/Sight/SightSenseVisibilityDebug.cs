@@ -15,8 +15,8 @@ namespace PerceptionECS.Editor
         {
             _manager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-            _interactionFeel = _manager.CreateEntityQuery(typeof(ComponentSenseInteraction), typeof(TagSenseFeel));
-            _interactionRemember = _manager.CreateEntityQuery(typeof(ComponentSenseRemember), typeof(TagSenseRemember));
+            _interactionFeel = _manager.CreateEntityQuery(typeof(ComponentSenseContact), typeof(TagSenseContactFeel));
+            _interactionRemember = _manager.CreateEntityQuery(typeof(ComponentSenseContactRemember), typeof(TagSenseContactRemember));
         }
 
         private void OnDrawGizmos()
@@ -28,16 +28,17 @@ namespace PerceptionECS.Editor
 
             Gizmos.color = Color.green;
 
-            foreach (var interaction in
-                     _interactionFeel.ToComponentDataArray<ComponentSenseInteraction>(Allocator.Temp))
+            foreach (var contact in
+                     _interactionFeel.ToComponentDataArray<ComponentSenseContact>(Allocator.Temp))
             {
-                Gizmos.DrawWireSphere(_manager.GetComponentData<LocalToWorld>(interaction.Source).Position, 0.5f);
+                var source = _manager.GetComponentData<ComponentSenseBase>(contact.Source).Entity;
+                Gizmos.DrawWireSphere(_manager.GetComponentData<LocalToWorld>(source).Position, 0.5f);
             }
 
             Gizmos.color = Color.yellow;
 
             foreach (var remember in
-                     _interactionRemember.ToComponentDataArray<ComponentSenseRemember>(Allocator.Temp))
+                     _interactionRemember.ToComponentDataArray<ComponentSenseContactRemember>(Allocator.Temp))
             {
                 Gizmos.DrawWireSphere(remember.SourceTransform.Position, 0.5f);
             }
