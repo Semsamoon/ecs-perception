@@ -10,14 +10,12 @@ namespace PerceptionECS
             public override void Bake(SightSenseSourceAuthoring authoring)
             {
                 var entity = CreateAdditionalEntity(TransformUsageFlags.None);
-                AddComponent(entity, new ComponentSenseBase
+                AddComponent(entity, new EventSenseSourceCreate
                 {
-                    Entity = GetEntity(authoring, TransformUsageFlags.Dynamic),
+                    Owner = GetEntity(TransformUsageFlags.Dynamic),
+                    Transform = GetEntity(TransformUsageFlags.Dynamic),
                 });
-                AddComponent(entity, new ComponentSenseSightSource());
-                AddComponent<EventSenseCreate>(entity);
-                AddComponent<EventSenseDestroy>(entity);
-                SetComponentEnabled<EventSenseDestroy>(entity, false);
+                AddComponent(entity, new EventSenseSightSourceCreate());
             }
         }
     }

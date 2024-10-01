@@ -18,11 +18,13 @@ namespace PerceptionECS
             public override void Bake(SightSenseReceiverAuthoring authoring)
             {
                 var entity = CreateAdditionalEntity(TransformUsageFlags.None);
-                AddComponent(entity, new ComponentSenseBase
+                AddComponent(entity, new EventSenseReceiverCreate
                 {
-                    Entity = GetEntity(authoring, TransformUsageFlags.Dynamic),
+                    Owner = GetEntity(TransformUsageFlags.Dynamic),
+                    Transform = GetEntity(TransformUsageFlags.Dynamic),
+                    RememberTime = authoring._rememberTime,
                 });
-                AddComponent(entity, new ComponentSenseSightReceiver
+                AddComponent(entity, new EventSenseSightReceiverCreate
                 {
                     ViewAngleCos = math.cos(math.radians(authoring._viewAngleDegrees / 2)),
                     ViewRadiusSquared = math.pow(authoring._viewRadius, 2),
@@ -30,17 +32,6 @@ namespace PerceptionECS
                     BackwardOffset = authoring._backwardOffset,
                     NearClipRadiusSquared = math.pow(authoring._nearClipRadius, 2),
                 });
-                AddComponent<EventSenseCreate>(entity);
-                AddComponent<EventSenseDestroy>(entity);
-                SetComponentEnabled<EventSenseDestroy>(entity, false);
-
-                if (authoring._rememberTime > 0)
-                {
-                    AddComponent(entity, new ComponentSenseReceiverRemember
-                    {
-                        RememberTime = authoring._rememberTime,
-                    });
-                }
             }
         }
 
