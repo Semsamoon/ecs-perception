@@ -22,7 +22,12 @@ namespace PerceptionECS
 
             foreach (var (eventCreate, _) in SystemAPI.Query<RefRO<EventSenseContactCreate>, RefRO<EventSenseSightContactCreate>>())
             {
-                buffer.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseSightContact());
+                var entity = eventCreate.ValueRO.Entity;
+                buffer.AddComponent(entity, new ComponentSenseSightContact());
+                buffer.AddComponent(entity, new TagSenseContactLineCast());
+                buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, false);
+                buffer.AddComponent(entity, new TagSenseContactLineUp());
+                buffer.SetComponentEnabled<TagSenseContactLineUp>(entity, false);
             }
 
             buffer.Playback(state.EntityManager);

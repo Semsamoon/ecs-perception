@@ -2,7 +2,6 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics;
 using Unity.Transforms;
 
 namespace PerceptionECS
@@ -22,14 +21,12 @@ namespace PerceptionECS
         public void OnUpdate(ref SystemState state)
         {
             var buffer = new EntityCommandBuffer(Allocator.Temp);
-            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
             foreach (var (contact, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact>()
-                         .WithDisabled<TagSenseContactFeel>().WithEntityAccess())
+                         .WithDisabled<TagSenseContactFeel, TagSenseContactLineCast, TagSenseContactLineUp>().WithEntityAccess())
             {
-                var entityReceiver = contact.ValueRO.Receiver;
-                var entitySource = contact.ValueRO.Source;
+                var (entityReceiver, entitySource) = contact.ValueRO;
 
                 var receiverComponent = SystemAPI.GetComponentRO<ComponentSenseReceiver>(entityReceiver);
                 var sourceComponent = SystemAPI.GetComponentRO<ComponentSenseSource>(entitySource);
@@ -38,13 +35,65 @@ namespace PerceptionECS
                 var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(receiverComponent.ValueRO.Transform).ValueRO;
                 var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(sourceComponent.ValueRO.Transform).ValueRO;
 
-                if (!IsInSightCone(receiverTransform, receiver, sourceTransform.Position, false)
-                    || !IsRayConnectsDirectly(receiverComponent.ValueRO.Owner, receiverTransform, receiver,
-                        sourceComponent.ValueRO.Owner, sourceTransform.Position, ref collisionWorld))
+                if (!IsInSightCone(receiverTransform, receiver, sourceTransform.Position, false))
                 {
                     continue;
                 }
 
+                var linecastEntity = buffer.CreateEntity();
+                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                {
+                    Owner = entity,
+                    ReceiverTransform = receiverComponent.ValueRO.Transform,
+                    ReceiverOwner = receiverComponent.ValueRO.Owner,
+                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
+                    SourceTransform = sourceComponent.ValueRO.Transform,
+                    SourceOwner = sourceComponent.ValueRO.Owner,
+                    SourceOffset = float3.zero,
+                });
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
+                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+
+                buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
+            }
+
+            foreach (var (contact, entity) in
+                     SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact, TagSenseContactLineUp>()
+                         .WithDisabled<TagSenseContactFeel, TagSenseContactLineCast>().WithEntityAccess())
+            {
+                buffer.SetComponentEnabled<TagSenseContactLineUp>(entity, false);
+
+                var (entityReceiver, entitySource) = contact.ValueRO;
+
+                var receiverComponent = SystemAPI.GetComponentRO<ComponentSenseReceiver>(entityReceiver);
+                var sourceComponent = SystemAPI.GetComponentRO<ComponentSenseSource>(entitySource);
+
+                var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
+                var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(receiverComponent.ValueRO.Transform).ValueRO;
+                var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(sourceComponent.ValueRO.Transform).ValueRO;
+
+                if (!IsInSightCone(receiverTransform, receiver, sourceTransform.Position, false))
+                {
+                    continue;
+                }
+
+                var linecastEntity = buffer.CreateEntity();
+                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                {
+                    Owner = entity,
+                    ReceiverTransform = receiverComponent.ValueRO.Transform,
+                    ReceiverOwner = receiverComponent.ValueRO.Owner,
+                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
+                    SourceTransform = sourceComponent.ValueRO.Transform,
+                    SourceOwner = sourceComponent.ValueRO.Owner,
+                    SourceOffset = float3.zero,
+                });
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
+                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+
+                buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
                 buffer.SetComponentEnabled<TagSenseContactFeel>(entity, true);
 
                 var eventUpdate = buffer.CreateEntity();
@@ -56,10 +105,19 @@ namespace PerceptionECS
             }
 
             foreach (var (contact, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact, TagSenseContactFeel>().WithEntityAccess())
+                     SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact, TagSenseContactFeel>()
+                         .WithDisabled<TagSenseContactLineCast, TagSenseContactLineUp>().WithEntityAccess())
             {
-                var entityReceiver = contact.ValueRO.Receiver;
-                var entitySource = contact.ValueRO.Source;
+                buffer.SetComponentEnabled<TagSenseContactFeel>(entity, false);
+
+                var eventUpdate = buffer.CreateEntity();
+                buffer.AddComponent(eventUpdate, new EventSenseContactUpdateFeel
+                {
+                    Entity = entity,
+                });
+                buffer.AddComponent(eventUpdate, new EventSenseSightContactUpdateFeel());
+
+                var (entityReceiver, entitySource) = contact.ValueRO;
 
                 var receiverComponent = SystemAPI.GetComponentRO<ComponentSenseReceiver>(entityReceiver);
                 var sourceComponent = SystemAPI.GetComponentRO<ComponentSenseSource>(entitySource);
@@ -68,9 +126,44 @@ namespace PerceptionECS
                 var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(receiverComponent.ValueRO.Transform).ValueRO;
                 var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(sourceComponent.ValueRO.Transform).ValueRO;
 
-                if (IsInSightCone(receiverTransform, receiver, sourceTransform.Position, true)
-                    && IsRayConnectsDirectly(receiverComponent.ValueRO.Owner, receiverTransform, receiver,
-                        sourceComponent.ValueRO.Owner, sourceTransform.Position, ref collisionWorld))
+                if (!IsInSightCone(receiverTransform, receiver, sourceTransform.Position, true))
+                {
+                    continue;
+                }
+
+                var linecastEntity = buffer.CreateEntity();
+                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                {
+                    Owner = entity,
+                    ReceiverTransform = receiverComponent.ValueRO.Transform,
+                    ReceiverOwner = receiverComponent.ValueRO.Owner,
+                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
+                    SourceTransform = sourceComponent.ValueRO.Transform,
+                    SourceOwner = sourceComponent.ValueRO.Owner,
+                    SourceOffset = float3.zero,
+                });
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
+                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+
+                buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
+            }
+
+            foreach (var (contact, entity) in
+                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
+                         .WithAll<ComponentSenseSightContact, TagSenseContactFeel, TagSenseContactLineCast>()
+                         .WithDisabled<TagSenseContactLineUp>().WithEntityAccess())
+            {
+                var (entityReceiver, entitySource) = contact.ValueRO;
+
+                var receiverComponent = SystemAPI.GetComponentRO<ComponentSenseReceiver>(entityReceiver);
+                var sourceComponent = SystemAPI.GetComponentRO<ComponentSenseSource>(entitySource);
+
+                var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
+                var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(receiverComponent.ValueRO.Transform).ValueRO;
+                var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(sourceComponent.ValueRO.Transform).ValueRO;
+
+                if (IsInSightCone(receiverTransform, receiver, sourceTransform.Position, true))
                 {
                     continue;
                 }
@@ -83,6 +176,54 @@ namespace PerceptionECS
                     Entity = entity,
                 });
                 buffer.AddComponent(eventUpdate, new EventSenseSightContactUpdateFeel());
+            }
+
+            foreach (var (contact, entity) in
+                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
+                         .WithAll<ComponentSenseSightContact, TagSenseContactFeel, TagSenseContactLineUp>()
+                         .WithDisabled<TagSenseContactLineCast>().WithEntityAccess())
+            {
+                buffer.SetComponentEnabled<TagSenseContactLineUp>(entity, false);
+
+                var (entityReceiver, entitySource) = contact.ValueRO;
+
+                var receiverComponent = SystemAPI.GetComponentRO<ComponentSenseReceiver>(entityReceiver);
+                var sourceComponent = SystemAPI.GetComponentRO<ComponentSenseSource>(entitySource);
+
+                var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
+                var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(receiverComponent.ValueRO.Transform).ValueRO;
+                var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(sourceComponent.ValueRO.Transform).ValueRO;
+
+                if (!IsInSightCone(receiverTransform, receiver, sourceTransform.Position, true))
+                {
+                    buffer.SetComponentEnabled<TagSenseContactFeel>(entity, false);
+
+                    var eventUpdate = buffer.CreateEntity();
+                    buffer.AddComponent(eventUpdate, new EventSenseContactUpdateFeel
+                    {
+                        Entity = entity,
+                    });
+                    buffer.AddComponent(eventUpdate, new EventSenseSightContactUpdateFeel());
+
+                    continue;
+                }
+
+                var linecastEntity = buffer.CreateEntity();
+                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                {
+                    Owner = entity,
+                    ReceiverTransform = receiverComponent.ValueRO.Transform,
+                    ReceiverOwner = receiverComponent.ValueRO.Owner,
+                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
+                    SourceTransform = sourceComponent.ValueRO.Transform,
+                    SourceOwner = sourceComponent.ValueRO.Owner,
+                    SourceOffset = float3.zero,
+                });
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
+                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
+                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+
+                buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
             }
 
             buffer.Playback(state.EntityManager);
@@ -105,32 +246,6 @@ namespace PerceptionECS
 
             var direction = difference * math.rsqrt(distanceSquared);
             return math.dot(receiverTransform.Forward, direction) >= receiver.ViewAngleCos;
-        }
-
-        [BurstCompile]
-        private bool IsRayConnectsDirectly(
-            Entity entityReceiverOwner, in LocalToWorld receiverTransform, in ComponentSenseSightReceiver receiver,
-            Entity entitySourceOwner, in float3 sourcePosition, ref CollisionWorld collisionWorld)
-        {
-            var raycast = new RaycastInput
-            {
-                Start = receiverTransform.Position + receiverTransform.Forward * -receiver.BackwardOffset,
-                End = sourcePosition,
-                Filter = CollisionFilter.Default,
-            };
-
-            var hits = new NativeList<RaycastHit>(4, Allocator.Temp);
-            collisionWorld.CastRay(raycast, ref hits);
-
-            foreach (var hit in hits)
-            {
-                if (hit.Entity != entityReceiverOwner && hit.Entity != entitySourceOwner)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }
