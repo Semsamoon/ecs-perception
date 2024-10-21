@@ -3,8 +3,8 @@ using Unity.Entities;
 
 namespace PerceptionECS
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseCreateSource), OrderFirst = true)]
-    public partial struct SystemSenseSourceCreateEntity : ISystem
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseCreateLinecast), OrderFirst = true)]
+    public partial struct SystemSenseLinecastCreateEntity : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
@@ -17,7 +17,7 @@ namespace PerceptionECS
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            foreach (var eventCreate in SystemAPI.Query<RefRW<EventSenseSourceCreate>>())
+            foreach (var eventCreate in SystemAPI.Query<RefRW<EventSenseLinecastCreate>>())
             {
                 var entity = state.EntityManager.CreateEntity();
                 eventCreate.ValueRW.Entity = entity;

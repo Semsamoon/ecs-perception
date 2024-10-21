@@ -40,20 +40,12 @@ namespace PerceptionECS
                     continue;
                 }
 
-                var linecastEntity = buffer.CreateEntity();
-                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                var eventLinecastCreate = buffer.CreateEntity();
+                buffer.AddComponent(eventLinecastCreate, new EventSenseLinecastCreate
                 {
-                    Owner = entity,
-                    ReceiverTransform = receiverComponent.ValueRO.Transform,
-                    ReceiverOwner = receiverComponent.ValueRO.Owner,
-                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
-                    SourceTransform = sourceComponent.ValueRO.Transform,
-                    SourceOwner = sourceComponent.ValueRO.Owner,
-                    SourceOffset = float3.zero,
+                    Contact = entity,
                 });
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
-                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+                buffer.AddComponent(eventLinecastCreate, new EventSenseSightLinecastCreate());
 
                 buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
             }
@@ -78,20 +70,12 @@ namespace PerceptionECS
                     continue;
                 }
 
-                var linecastEntity = buffer.CreateEntity();
-                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                var eventLinecastCreate = buffer.CreateEntity();
+                buffer.AddComponent(eventLinecastCreate, new EventSenseLinecastCreate
                 {
-                    Owner = entity,
-                    ReceiverTransform = receiverComponent.ValueRO.Transform,
-                    ReceiverOwner = receiverComponent.ValueRO.Owner,
-                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
-                    SourceTransform = sourceComponent.ValueRO.Transform,
-                    SourceOwner = sourceComponent.ValueRO.Owner,
-                    SourceOffset = float3.zero,
+                    Contact = entity,
                 });
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
-                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+                buffer.AddComponent(eventLinecastCreate, new EventSenseSightLinecastCreate());
 
                 buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
                 buffer.SetComponentEnabled<TagSenseContactFeel>(entity, true);
@@ -131,20 +115,12 @@ namespace PerceptionECS
                     continue;
                 }
 
-                var linecastEntity = buffer.CreateEntity();
-                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                var eventLinecastCreate = buffer.CreateEntity();
+                buffer.AddComponent(eventLinecastCreate, new EventSenseLinecastCreate
                 {
-                    Owner = entity,
-                    ReceiverTransform = receiverComponent.ValueRO.Transform,
-                    ReceiverOwner = receiverComponent.ValueRO.Owner,
-                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
-                    SourceTransform = sourceComponent.ValueRO.Transform,
-                    SourceOwner = sourceComponent.ValueRO.Owner,
-                    SourceOffset = float3.zero,
+                    Contact = entity,
                 });
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
-                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+                buffer.AddComponent(eventLinecastCreate, new EventSenseSightLinecastCreate());
 
                 buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
             }
@@ -208,20 +184,12 @@ namespace PerceptionECS
                     continue;
                 }
 
-                var linecastEntity = buffer.CreateEntity();
-                buffer.AddComponent(linecastEntity, new ComponentSenseLinecast
+                var eventLinecastCreate = buffer.CreateEntity();
+                buffer.AddComponent(eventLinecastCreate, new EventSenseLinecastCreate
                 {
-                    Owner = entity,
-                    ReceiverTransform = receiverComponent.ValueRO.Transform,
-                    ReceiverOwner = receiverComponent.ValueRO.Owner,
-                    ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
-                    SourceTransform = sourceComponent.ValueRO.Transform,
-                    SourceOwner = sourceComponent.ValueRO.Owner,
-                    SourceOffset = float3.zero,
+                    Contact = entity,
                 });
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastWait());
-                buffer.AddComponent(linecastEntity, new TagSenseLinecastSuccess());
-                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(linecastEntity, false);
+                buffer.AddComponent(eventLinecastCreate, new EventSenseSightLinecastCreate());
 
                 buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
             }
