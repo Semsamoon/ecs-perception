@@ -24,6 +24,8 @@ namespace PerceptionECS
             {
                 var entity = eventCreate.ValueRO.Entity;
                 buffer.AddComponent(entity, new ComponentSenseSightContact());
+                buffer.AddComponent(entity, new TagSenseSightContactConeIn());
+                buffer.SetComponentEnabled<TagSenseSightContactConeIn>(entity, false);
                 buffer.AddComponent(entity, new TagSenseContactLineCast());
                 buffer.SetComponentEnabled<TagSenseContactLineCast>(entity, false);
                 buffer.AddComponent(entity, new TagSenseContactLineUp());
