@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace PerceptionECS
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdate), OrderLast = true)]
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderLast = true)]
     public partial struct SystemSenseContactUpdateFeelFinish : ISystem
     {
         public void OnCreate(ref SystemState state)

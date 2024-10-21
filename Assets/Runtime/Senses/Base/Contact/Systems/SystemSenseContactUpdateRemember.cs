@@ -5,7 +5,7 @@ using Unity.Transforms;
 
 namespace PerceptionECS
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdate))]
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact))]
     public partial struct SystemSenseContactUpdateRemember : ISystem
     {
         public void OnCreate(ref SystemState state)
