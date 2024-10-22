@@ -19,7 +19,7 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var eventUpdate in SystemAPI.Query<RefRO<EventSenseContactUpdateFeel>>())
             {
@@ -32,12 +32,12 @@ namespace ECSPerception
 
                 if (SystemAPI.IsComponentEnabled<TagSenseContactFeel>(entityContact))
                 {
-                    buffer.SetComponentEnabled<TagSenseContactRemember>(entityContact, false);
-                    buffer.SetComponent(entityContact, new ComponentSenseContactRemember());
+                    commands.SetComponentEnabled<TagSenseContactRemember>(entityContact, false);
+                    commands.SetComponent(entityContact, new ComponentSenseContactRemember());
                     continue;
                 }
 
-                buffer.SetComponentEnabled<TagSenseContactRemember>(entityContact, true);
+                commands.SetComponentEnabled<TagSenseContactRemember>(entityContact, true);
 
                 var contact = SystemAPI.GetComponentRO<ComponentSenseContact>(entityContact);
                 var receiver = SystemAPI.GetComponentRO<ComponentSenseReceiverRemember>(contact.ValueRO.Receiver);
@@ -56,11 +56,11 @@ namespace ECSPerception
                     continue;
                 }
 
-                buffer.SetComponentEnabled<TagSenseContactRemember>(entity, false);
-                buffer.SetComponent(entity, new ComponentSenseContactRemember());
+                commands.SetComponentEnabled<TagSenseContactRemember>(entity, false);
+                commands.SetComponent(entity, new ComponentSenseContactRemember());
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
 
             foreach (var (contact, remember) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>, RefRW<ComponentSenseContactRemember>>().WithAll<TagSenseContactFeel>())

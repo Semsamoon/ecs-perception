@@ -20,7 +20,7 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (contact, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact>()
@@ -28,7 +28,7 @@ namespace ECSPerception
             {
                 if (IsInCone(ref state, contact, false))
                 {
-                    buffer.SetComponentEnabled<TagSenseSightContactConeIn>(entity, true);
+                    commands.SetComponentEnabled<TagSenseSightContactConeIn>(entity, true);
                 }
             }
 
@@ -38,11 +38,11 @@ namespace ECSPerception
             {
                 if (!IsInCone(ref state, contact, true))
                 {
-                    buffer.SetComponentEnabled<TagSenseSightContactConeIn>(entity, false);
+                    commands.SetComponentEnabled<TagSenseSightContactConeIn>(entity, false);
                 }
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
 
         [BurstCompile]

@@ -18,7 +18,7 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var eventCreate in SystemAPI.Query<RefRO<EventSenseReceiverCreate>>().WithAll<EventSenseSightReceiverCreate>())
             {
@@ -35,17 +35,17 @@ namespace ECSPerception
                         continue;
                     }
 
-                    var eventContactCreate = buffer.CreateEntity();
-                    buffer.AddComponent(eventContactCreate, new EventSenseContactCreate
+                    var eventContactCreate = commands.CreateEntity();
+                    commands.AddComponent(eventContactCreate, new EventSenseContactCreate
                     {
                         Receiver = entityReceiver,
                         Source = entitySource,
                     });
-                    buffer.AddComponent(eventContactCreate, new EventSenseSightContactCreate());
+                    commands.AddComponent(eventContactCreate, new EventSenseSightContactCreate());
                 }
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
     }
 }

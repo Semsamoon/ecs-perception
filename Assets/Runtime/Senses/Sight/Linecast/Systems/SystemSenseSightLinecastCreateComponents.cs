@@ -20,7 +20,7 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (eventCreate, _) in
                      SystemAPI.Query<RefRO<EventSenseLinecastCreate>, RefRO<EventSenseSightLinecastCreate>>())
@@ -34,7 +34,7 @@ namespace ECSPerception
                 var receiver = SystemAPI.GetComponentRO<ComponentSenseSightReceiver>(entityReceiver).ValueRO;
                 var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(receiverComponent.ValueRO.Transform).ValueRO;
 
-                buffer.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseLinecast
+                commands.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseLinecast
                 {
                     Owner = eventCreate.ValueRO.Contact,
                     ReceiverTransform = receiverComponent.ValueRO.Transform,
@@ -46,7 +46,7 @@ namespace ECSPerception
                 });
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
     }
 }

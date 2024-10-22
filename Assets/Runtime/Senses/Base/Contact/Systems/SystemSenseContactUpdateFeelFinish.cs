@@ -18,14 +18,14 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (_, entity) in SystemAPI.Query<RefRO<EventSenseContactUpdateFeel>>().WithEntityAccess())
             {
-                buffer.DestroyEntity(entity);
+                commands.DestroyEntity(entity);
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
     }
 }

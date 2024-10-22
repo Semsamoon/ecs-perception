@@ -18,11 +18,11 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (eventCreate, eventSightCreate) in SystemAPI.Query<RefRO<EventSenseReceiverCreate>, RefRO<EventSenseSightReceiverCreate>>())
             {
-                buffer.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseSightReceiver
+                commands.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseSightReceiver
                 {
                     ViewAngleCos = eventSightCreate.ValueRO.ViewAngleCos,
                     ViewRadiusSquared = eventSightCreate.ValueRO.ViewRadiusSquared,
@@ -32,7 +32,7 @@ namespace ECSPerception
                 });
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
     }
 }

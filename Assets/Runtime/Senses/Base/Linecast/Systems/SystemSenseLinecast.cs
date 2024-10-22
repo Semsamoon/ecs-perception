@@ -23,7 +23,7 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
             foreach (var (linecast, entity) in
@@ -42,13 +42,13 @@ namespace ECSPerception
                 if (IsLineCastSucceed(entityReceiverOwner, receiverTransform.Position + receiverOffset,
                         entitySourceOwner, sourceTransform.Position + sourceOffset, ref collisionWorld))
                 {
-                    buffer.SetComponentEnabled<TagSenseLinecastSuccess>(entity, true);
+                    commands.SetComponentEnabled<TagSenseLinecastSuccess>(entity, true);
                 }
 
-                buffer.SetComponentEnabled<TagSenseLinecastWait>(entity, false);
+                commands.SetComponentEnabled<TagSenseLinecastWait>(entity, false);
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
 
         [BurstCompile]

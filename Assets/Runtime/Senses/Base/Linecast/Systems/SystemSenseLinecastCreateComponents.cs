@@ -18,17 +18,17 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var buffer = new EntityCommandBuffer(Allocator.Temp);
+            var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var eventCreate in SystemAPI.Query<RefRO<EventSenseLinecastCreate>>())
             {
                 var entity = eventCreate.ValueRO.Entity;
-                buffer.AddComponent(entity, new TagSenseLinecastWait());
-                buffer.AddComponent(entity, new TagSenseLinecastSuccess());
-                buffer.SetComponentEnabled<TagSenseLinecastSuccess>(entity, false);
+                commands.AddComponent(entity, new TagSenseLinecastWait());
+                commands.AddComponent(entity, new TagSenseLinecastSuccess());
+                commands.SetComponentEnabled<TagSenseLinecastSuccess>(entity, false);
             }
 
-            buffer.Playback(state.EntityManager);
+            commands.Playback(state.EntityManager);
         }
     }
 }
