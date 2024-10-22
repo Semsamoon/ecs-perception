@@ -28,6 +28,7 @@ namespace PerceptionECS
                     Owner = eventCreate.ValueRO.Owner,
                     Transform = eventCreate.ValueRO.Transform,
                 });
+                buffer.AddBuffer<BufferSenseContact>(entity);
             }
 
             buffer.Playback(state.EntityManager);

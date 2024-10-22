@@ -1,4 +1,5 @@
 ﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace PerceptionECS
@@ -17,11 +18,24 @@ namespace PerceptionECS
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var buffer = new EntityCommandBuffer(Allocator.Temp);
+
             foreach (var eventCreate in SystemAPI.Query<RefRW<EventSenseContactCreate>>())
             {
                 var entity = state.EntityManager.CreateEntity();
                 eventCreate.ValueRW.Entity = entity;
+
+                buffer.AppendToBuffer(eventCreate.ValueRO.Receiver, new BufferSenseContact
+                {
+                    Entity = entity,
+                });
+                buffer.AppendToBuffer(eventCreate.ValueRO.Source, new BufferSenseContact
+                {
+                    Entity = entity,
+                });
             }
+
+            buffer.Playback(state.EntityManager);
         }
     }
 }

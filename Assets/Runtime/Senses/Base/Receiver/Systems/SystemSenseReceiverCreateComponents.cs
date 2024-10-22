@@ -28,6 +28,7 @@ namespace PerceptionECS
                     Owner = eventCreate.ValueRO.Owner,
                     Transform = eventCreate.ValueRO.Transform,
                 });
+                buffer.AddBuffer<BufferSenseContact>(entity);
                 if (eventCreate.ValueRO.RememberTime > 0)
                 {
                     buffer.AddComponent(entity, new ComponentSenseReceiverRemember

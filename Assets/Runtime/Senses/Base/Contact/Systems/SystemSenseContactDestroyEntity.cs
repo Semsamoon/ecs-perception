@@ -22,6 +22,39 @@ namespace PerceptionECS
 
             foreach (var eventDestroy in SystemAPI.Query<RefRO<EventSenseContactDestroy>>())
             {
+                var contactEntity = eventDestroy.ValueRO.Entity;
+                var contact = SystemAPI.GetComponentRO<ComponentSenseContact>(contactEntity);
+                var receiver = contact.ValueRO.Receiver;
+                var source = contact.ValueRO.Source;
+
+                if (state.EntityManager.Exists(receiver))
+                {
+                    var contactsReceiver = SystemAPI.GetBuffer<BufferSenseContact>(receiver);
+
+                    for (var i = 0; i < contactsReceiver.Length; i++)
+                    {
+                        if (contactsReceiver[i].Entity == contactEntity)
+                        {
+                            contactsReceiver.RemoveAt(i);
+                            break;
+                        }
+                    }
+                }
+
+                if (state.EntityManager.Exists(source))
+                {
+                    var contactsSource = SystemAPI.GetBuffer<BufferSenseContact>(source);
+
+                    for (var i = 0; i < contactsSource.Length; i++)
+                    {
+                        if (contactsSource[i].Entity == contactEntity)
+                        {
+                            contactsSource.RemoveAt(i);
+                            break;
+                        }
+                    }
+                }
+
                 buffer.DestroyEntity(eventDestroy.ValueRO.Entity);
             }
 
