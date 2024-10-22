@@ -2,7 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseCreateReceiver), OrderFirst = true), UpdateAfter(typeof(SystemSenseReceiverCreateEntity))]
     public partial struct SystemSenseReceiverCreateComponents : ISystem

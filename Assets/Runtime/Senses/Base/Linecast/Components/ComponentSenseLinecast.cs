@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 using Unity.Mathematics;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     public struct ComponentSenseLinecast : IComponentData
     {

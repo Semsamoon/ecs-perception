@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true)]
     public partial struct SystemSenseSightContactUpdateCone : ISystem

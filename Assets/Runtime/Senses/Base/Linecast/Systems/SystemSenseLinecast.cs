@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateLinecast), OrderFirst = true)]
     public partial struct SystemSenseLinecast : ISystem

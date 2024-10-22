@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [Serializable]
     public struct SenseAffiliationFilter

@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [UpdateInGroup(typeof(SimulationSystemGroup)), UpdateAfter(typeof(GroupSenseCreate))]
     public partial class GroupSenseUpdate : ComponentSystemGroup

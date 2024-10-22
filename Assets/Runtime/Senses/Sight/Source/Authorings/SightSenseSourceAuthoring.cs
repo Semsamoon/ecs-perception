@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 using UnityEngine;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     public sealed class SightSenseSourceAuthoring : MonoBehaviour
     {

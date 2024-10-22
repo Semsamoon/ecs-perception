@@ -2,7 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateLinecast), OrderLast = true)]
     public partial struct SystemSenseLinecastResult : ISystem

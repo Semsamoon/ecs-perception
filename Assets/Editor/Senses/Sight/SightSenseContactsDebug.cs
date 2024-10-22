@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace PerceptionECS.Editor
+namespace ECSPerception.Editor
 {
     public sealed class SightSenseContactsDebug : MonoBehaviour
     {

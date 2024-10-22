@@ -1,7 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseCreateSource), OrderFirst = true)]
     public partial struct SystemSenseSourceCreateEntity : ISystem

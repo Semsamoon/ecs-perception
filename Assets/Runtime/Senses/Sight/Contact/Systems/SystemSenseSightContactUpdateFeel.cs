@@ -2,7 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightContactUpdateCone))]
     public partial struct SystemSenseSightContactUpdateFeel : ISystem

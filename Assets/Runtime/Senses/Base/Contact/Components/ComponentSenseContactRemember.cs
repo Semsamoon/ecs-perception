@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 using Unity.Transforms;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     public struct ComponentSenseContactRemember : IComponentData
     {

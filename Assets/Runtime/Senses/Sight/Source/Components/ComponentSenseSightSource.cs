@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     public struct ComponentSenseSightSource : IComponentData
     {

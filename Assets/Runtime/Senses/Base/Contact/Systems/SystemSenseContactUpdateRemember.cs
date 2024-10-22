@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact))]
     public partial struct SystemSenseContactUpdateRemember : ISystem

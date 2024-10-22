@@ -2,7 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseDestroySource), OrderLast = true), UpdateAfter(typeof(SystemSenseSourceDestroyEntity))]
     public partial struct SystemSenseSourceDestroyFinish : ISystem

@@ -2,7 +2,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace PerceptionECS
+namespace ECSPerception
 {
     public sealed class SightSenseReceiverAuthoring : MonoBehaviour
     {
