@@ -14,20 +14,11 @@ namespace ECSPerception.Editor
         private void Start()
         {
             _manager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            var builder = new EntityQueryBuilder(Allocator.Temp);
 
-            var contactFeelTypes = new ComponentType[]
-            {
-                typeof(ComponentSenseContact),
-                typeof(TagSenseContactFeel),
-            };
-            _contactFeelQuery = _manager.CreateEntityQuery(contactFeelTypes);
-
-            var contactRememberTypes = new ComponentType[]
-            {
-                typeof(ComponentSenseContactRemember),
-                typeof(TagSenseContactRemember),
-            };
-            _contactRememberQuery = _manager.CreateEntityQuery(contactRememberTypes);
+            _contactFeelQuery = builder.WithAll<ComponentSenseContact, TagSenseContactFeel>().Build(_manager);
+            _contactRememberQuery = builder.Reset().WithAll<ComponentSenseContactRemember, TagSenseContactFeelRemember>()
+                .WithDisabled<TagSenseContactFeel>().Build(_manager);
         }
 
         private void OnDrawGizmos()

@@ -20,54 +20,41 @@ namespace ECSPerception
         public void OnUpdate(ref SystemState state)
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
-
-            foreach (var eventUpdate in SystemAPI.Query<RefRO<EventSenseContactUpdateFeel>>())
-            {
-                var entityContact = eventUpdate.ValueRO.Entity;
-
-                if (!SystemAPI.HasComponent<ComponentSenseContactRemember>(entityContact))
-                {
-                    continue;
-                }
-
-                if (SystemAPI.IsComponentEnabled<TagSenseContactFeel>(entityContact))
-                {
-                    commands.SetComponentEnabled<TagSenseContactRemember>(entityContact, false);
-                    commands.SetComponent(entityContact, new ComponentSenseContactRemember());
-                    continue;
-                }
-
-                commands.SetComponentEnabled<TagSenseContactRemember>(entityContact, true);
-
-                var contact = SystemAPI.GetComponentRO<ComponentSenseContact>(entityContact);
-                var receiver = SystemAPI.GetComponentRO<ComponentSenseReceiverRemember>(contact.ValueRO.Receiver);
-                SystemAPI.GetComponentRW<ComponentSenseContactRemember>(entityContact).ValueRW.Timer = receiver.ValueRO.RememberTime;
-            }
-
             var deltaTime = SystemAPI.Time.DeltaTime;
 
-            foreach (var (remember, entity) in
-                     SystemAPI.Query<RefRW<ComponentSenseContactRemember>>().WithAll<TagSenseContactRemember>().WithEntityAccess())
+            foreach (var (_, entity) in
+                     SystemAPI.Query<TagSenseContactFeel>().WithDisabled<TagSenseContactFeelRemember>().WithEntityAccess())
             {
-                remember.ValueRW.Timer -= deltaTime;
-
-                if (remember.ValueRO.Timer > 0)
-                {
-                    continue;
-                }
-
-                commands.SetComponentEnabled<TagSenseContactRemember>(entity, false);
-                commands.SetComponent(entity, new ComponentSenseContactRemember());
+                commands.SetComponentEnabled<TagSenseContactFeelRemember>(entity, true);
             }
-
-            commands.Playback(state.EntityManager);
 
             foreach (var (contact, remember) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>, RefRW<ComponentSenseContactRemember>>().WithAll<TagSenseContactFeel>())
             {
-                var entitySourceTransform = SystemAPI.GetComponentRO<ComponentSenseSource>(contact.ValueRO.Source).ValueRO.Transform;
-                remember.ValueRW.SourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(entitySourceTransform).ValueRO;
+                var (receiver, source) = contact.ValueRO;
+
+                var entitySourceTransform = SystemAPI.GetComponentRO<ComponentSenseSource>(source).ValueRO.Transform;
+                var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(entitySourceTransform);
+                var receiverRemember = SystemAPI.GetComponentRO<ComponentSenseReceiverRemember>(receiver);
+
+                remember.ValueRW.SourceTransform = sourceTransform.ValueRO;
+                remember.ValueRW.Timer = receiverRemember.ValueRO.RememberTime;
             }
+
+            foreach (var (remember, entity) in
+                     SystemAPI.Query<RefRW<ComponentSenseContactRemember>>().WithAll<TagSenseContactFeelRemember>()
+                         .WithDisabled<TagSenseContactFeel>().WithEntityAccess())
+            {
+                remember.ValueRW.Timer -= deltaTime;
+
+                if (remember.ValueRO.Timer <= 0)
+                {
+                    commands.SetComponentEnabled<TagSenseContactFeelRemember>(entity, false);
+                    commands.SetComponent(entity, new ComponentSenseContactRemember());
+                }
+            }
+
+            commands.Playback(state.EntityManager);
         }
     }
 }

@@ -36,8 +36,8 @@ namespace ECSPerception
                 if (SystemAPI.HasComponent<ComponentSenseReceiverRemember>(entityReceiver))
                 {
                     commands.AddComponent(entity, new ComponentSenseContactRemember());
-                    commands.AddComponent(entity, new TagSenseContactRemember());
-                    commands.SetComponentEnabled<TagSenseContactRemember>(entity, false);
+                    commands.AddComponent(entity, new TagSenseContactFeelRemember());
+                    commands.SetComponentEnabled<TagSenseContactFeelRemember>(entity, false);
                 }
             }
 
