@@ -20,7 +20,9 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var eventDestroy in SystemAPI.Query<RefRO<EventSenseReceiverDestroy>>().WithAll<EventSenseSightReceiverDestroy>())
+            foreach (var eventDestroy in SystemAPI
+                         .Query<RefRO<EventSenseReceiverDestroy>>()
+                         .WithAll<EventSenseSightReceiverDestroy>())
             {
                 var entityReceiver = eventDestroy.ValueRO.Entity;
                 var contacts = SystemAPI.GetBuffer<BufferSenseContact>(entityReceiver);

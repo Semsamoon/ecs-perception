@@ -20,16 +20,17 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (linecast, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseSightLinecast>>().WithAll<TagSenseLinecastResult>()
-                         .WithDisabled<TagSenseLinecastWait>().WithEntityAccess())
+            foreach (var linecast in SystemAPI
+                         .Query<RefRO<ComponentSenseSightLinecast>>()
+                         .WithAll<TagSenseLinecastResult>()
+                         .WithDisabled<TagSenseLinecastWait>())
             {
                 commands.SetComponentEnabled<TagSenseSightContactLinecastResult>(linecast.ValueRO.Contact, true);
             }
 
-            foreach (var (linecast, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseSightLinecast>>()
-                         .WithDisabled<TagSenseLinecastResult, TagSenseLinecastWait>().WithEntityAccess())
+            foreach (var linecast in SystemAPI
+                         .Query<RefRO<ComponentSenseSightLinecast>>()
+                         .WithDisabled<TagSenseLinecastResult, TagSenseLinecastWait>())
             {
                 commands.SetComponentEnabled<TagSenseSightContactLinecastResult>(linecast.ValueRO.Contact, false);
             }

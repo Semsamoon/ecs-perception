@@ -20,26 +20,29 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
+            foreach (var (_, entity) in SystemAPI
+                         .Query<RefRO<ComponentSenseContact>>()
                          .WithAll<ComponentSenseSightContact, TagSenseSightContactConecastResult, TagSenseSightContactLinecastResult>()
-                         .WithDisabled<TagSenseContactFeel>().WithEntityAccess())
+                         .WithDisabled<TagSenseContactFeel>()
+                         .WithEntityAccess())
             {
                 commands.SetComponentEnabled<TagSenseContactFeel>(entity, true);
             }
 
-            foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
+            foreach (var (_, entity) in SystemAPI
+                         .Query<RefRO<ComponentSenseContact>>()
                          .WithAll<ComponentSenseSightContact, TagSenseContactFeel>()
-                         .WithDisabled<TagSenseSightContactConecastResult>().WithEntityAccess())
+                         .WithDisabled<TagSenseSightContactConecastResult>()
+                         .WithEntityAccess())
             {
                 commands.SetComponentEnabled<TagSenseContactFeel>(entity, false);
             }
 
-            foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
+            foreach (var (_, entity) in SystemAPI
+                         .Query<RefRO<ComponentSenseContact>>()
                          .WithAll<ComponentSenseSightContact, TagSenseContactFeel>()
-                         .WithDisabled<TagSenseSightContactLinecastResult>().WithEntityAccess())
+                         .WithDisabled<TagSenseSightContactLinecastResult>()
+                         .WithEntityAccess())
             {
                 commands.SetComponentEnabled<TagSenseContactFeel>(entity, false);
             }

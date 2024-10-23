@@ -20,8 +20,10 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (_, entity) in
-                     SystemAPI.Query<TagSenseSightContactConecastResult>().WithDisabled<TagSenseSightContactLinecastWait>().WithEntityAccess())
+            foreach (var (_, entity) in SystemAPI
+                         .Query<TagSenseSightContactConecastResult>()
+                         .WithDisabled<TagSenseSightContactLinecastWait>()
+                         .WithEntityAccess())
             {
                 var eventCreate = commands.CreateEntity();
                 commands.AddComponent(eventCreate, new EventSenseLinecastCreate());

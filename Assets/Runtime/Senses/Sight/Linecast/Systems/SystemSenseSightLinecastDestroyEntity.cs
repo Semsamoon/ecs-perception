@@ -20,7 +20,9 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var eventDestroy in SystemAPI.Query<RefRO<EventSenseLinecastDestroy>>().WithAll<EventSenseSightLinecastDestroy>())
+            foreach (var eventDestroy in SystemAPI
+                         .Query<RefRO<EventSenseLinecastDestroy>>()
+                         .WithAll<EventSenseSightLinecastDestroy>())
             {
                 var contact = SystemAPI.GetComponentRO<ComponentSenseSightLinecast>(eventDestroy.ValueRO.Entity).ValueRO.Contact;
 

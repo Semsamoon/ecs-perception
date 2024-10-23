@@ -17,7 +17,8 @@ namespace ECSPerception
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            foreach (var eventCreate in SystemAPI.Query<RefRW<EventSenseSourceCreate>>())
+            foreach (var eventCreate in SystemAPI
+                         .Query<RefRW<EventSenseSourceCreate>>())
             {
                 var entity = state.EntityManager.CreateEntity();
                 eventCreate.ValueRW.Entity = entity;

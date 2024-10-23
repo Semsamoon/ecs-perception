@@ -20,13 +20,17 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var eventCreate in SystemAPI.Query<RefRO<EventSenseSourceCreate>>().WithAll<EventSenseSightSourceCreate>())
+            foreach (var eventCreate in SystemAPI
+                         .Query<RefRO<EventSenseSourceCreate>>()
+                         .WithAll<EventSenseSightSourceCreate>())
             {
                 var entitySource = eventCreate.ValueRO.Entity;
                 var entitySourceOwner = SystemAPI.GetComponentRO<ComponentSenseSource>(entitySource).ValueRO.Owner;
 
-                foreach (var (receiver, entityReceiver) in
-                         SystemAPI.Query<RefRO<ComponentSenseReceiver>>().WithAll<ComponentSenseSightReceiver>().WithEntityAccess())
+                foreach (var (receiver, entityReceiver) in SystemAPI
+                             .Query<RefRO<ComponentSenseReceiver>>()
+                             .WithAll<ComponentSenseSightReceiver>()
+                             .WithEntityAccess())
                 {
                     var entityReceiverOwner = receiver.ValueRO.Owner;
 

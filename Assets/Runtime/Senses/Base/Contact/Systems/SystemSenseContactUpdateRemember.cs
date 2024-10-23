@@ -22,14 +22,17 @@ namespace ECSPerception
             var commands = new EntityCommandBuffer(Allocator.Temp);
             var deltaTime = SystemAPI.Time.DeltaTime;
 
-            foreach (var (_, entity) in
-                     SystemAPI.Query<TagSenseContactFeel>().WithDisabled<TagSenseContactFeelRemember>().WithEntityAccess())
+            foreach (var (_, entity) in SystemAPI
+                         .Query<TagSenseContactFeel>()
+                         .WithDisabled<TagSenseContactFeelRemember>()
+                         .WithEntityAccess())
             {
                 commands.SetComponentEnabled<TagSenseContactFeelRemember>(entity, true);
             }
 
-            foreach (var (contact, remember) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>, RefRW<ComponentSenseContactRemember>>().WithAll<TagSenseContactFeel>())
+            foreach (var (contact, remember) in SystemAPI
+                         .Query<RefRO<ComponentSenseContact>, RefRW<ComponentSenseContactRemember>>()
+                         .WithAll<TagSenseContactFeel>())
             {
                 var (receiver, source) = contact.ValueRO;
 
@@ -41,9 +44,11 @@ namespace ECSPerception
                 remember.ValueRW.Timer = receiverRemember.ValueRO.RememberTime;
             }
 
-            foreach (var (remember, entity) in
-                     SystemAPI.Query<RefRW<ComponentSenseContactRemember>>().WithAll<TagSenseContactFeelRemember>()
-                         .WithDisabled<TagSenseContactFeel>().WithEntityAccess())
+            foreach (var (remember, entity) in SystemAPI
+                         .Query<RefRW<ComponentSenseContactRemember>>()
+                         .WithAll<TagSenseContactFeelRemember>()
+                         .WithDisabled<TagSenseContactFeel>()
+                         .WithEntityAccess())
             {
                 remember.ValueRW.Timer -= deltaTime;
 

@@ -20,7 +20,8 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var eventCreate in SystemAPI.Query<RefRO<EventSenseSourceCreate>>())
+            foreach (var eventCreate in SystemAPI
+                         .Query<RefRO<EventSenseSourceCreate>>())
             {
                 var entity = eventCreate.ValueRO.Entity;
                 commands.AddComponent(entity, new ComponentSenseSource

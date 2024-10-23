@@ -20,7 +20,9 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (_, entity) in SystemAPI.Query<RefRO<EventSenseContactDestroy>>().WithEntityAccess())
+            foreach (var (_, entity) in SystemAPI
+                         .Query<RefRO<EventSenseContactDestroy>>()
+                         .WithEntityAccess())
             {
                 commands.DestroyEntity(entity);
             }

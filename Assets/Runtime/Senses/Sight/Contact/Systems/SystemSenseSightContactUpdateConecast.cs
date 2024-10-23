@@ -22,9 +22,11 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (contact, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact>()
-                         .WithDisabled<TagSenseSightContactConecastResult>().WithEntityAccess())
+            foreach (var (contact, entity) in SystemAPI
+                         .Query<RefRO<ComponentSenseContact>>()
+                         .WithAll<ComponentSenseSightContact>()
+                         .WithDisabled<TagSenseSightContactConecastResult>()
+                         .WithEntityAccess())
             {
                 if (IsInCone(ref state, contact, false))
                 {
@@ -32,9 +34,10 @@ namespace ECSPerception
                 }
             }
 
-            foreach (var (contact, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
-                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConecastResult>().WithEntityAccess())
+            foreach (var (contact, entity) in SystemAPI
+                         .Query<RefRO<ComponentSenseContact>>()
+                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConecastResult>()
+                         .WithEntityAccess())
             {
                 if (!IsInCone(ref state, contact, true))
                 {

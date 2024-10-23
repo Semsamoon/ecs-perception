@@ -24,8 +24,10 @@ namespace ECSPerception
             var commands = new EntityCommandBuffer(Allocator.Temp);
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (linecast, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseLinecast>>().WithAll<TagSenseLinecastWait>().WithEntityAccess())
+            foreach (var (linecast, entity) in SystemAPI
+                         .Query<RefRO<ComponentSenseLinecast>>()
+                         .WithAll<TagSenseLinecastWait>()
+                         .WithEntityAccess())
             {
                 var entityReceiverTransform = linecast.ValueRO.ReceiverTransform;
                 var entityReceiverOwner = linecast.ValueRO.ReceiverOwner;
