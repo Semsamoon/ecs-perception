@@ -21,7 +21,7 @@ namespace ECSPerception
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (linecast, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseSightLinecast>>().WithAll<TagSenseLinecastSuccess>()
+                     SystemAPI.Query<RefRO<ComponentSenseSightLinecast>>().WithAll<TagSenseLinecastResult>()
                          .WithDisabled<TagSenseLinecastWait>().WithEntityAccess())
             {
                 commands.SetComponentEnabled<TagSenseSightContactLinecastResult>(linecast.ValueRO.Contact, true);
@@ -29,7 +29,7 @@ namespace ECSPerception
 
             foreach (var (linecast, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseSightLinecast>>()
-                         .WithDisabled<TagSenseLinecastSuccess, TagSenseLinecastWait>().WithEntityAccess())
+                         .WithDisabled<TagSenseLinecastResult, TagSenseLinecastWait>().WithEntityAccess())
             {
                 commands.SetComponentEnabled<TagSenseSightContactLinecastResult>(linecast.ValueRO.Contact, false);
             }

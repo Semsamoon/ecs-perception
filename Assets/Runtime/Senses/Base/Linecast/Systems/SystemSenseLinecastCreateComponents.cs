@@ -24,8 +24,8 @@ namespace ECSPerception
             {
                 var entity = eventCreate.ValueRO.Entity;
                 commands.AddComponent(entity, new TagSenseLinecastWait());
-                commands.AddComponent(entity, new TagSenseLinecastSuccess());
-                commands.SetComponentEnabled<TagSenseLinecastSuccess>(entity, false);
+                commands.AddComponent(entity, new TagSenseLinecastResult());
+                commands.SetComponentEnabled<TagSenseLinecastResult>(entity, false);
             }
 
             commands.Playback(state.EntityManager);

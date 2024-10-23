@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace ECSPerception
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightContactUpdateLinecast))]
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true)]
     public partial struct SystemSenseSightContactUpdateFeel : ISystem
     {
         public void OnCreate(ref SystemState state)

@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace ECSPerception
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateLinecast), OrderLast = true), UpdateAfter(typeof(SystemSenseSightLinecastResult))]
+    [BurstCompile, UpdateInGroup(typeof(GroupSensePreDestroy))]
     public partial struct SystemSenseSightLinecastFinish : ISystem
     {
         public void OnCreate(ref SystemState state)

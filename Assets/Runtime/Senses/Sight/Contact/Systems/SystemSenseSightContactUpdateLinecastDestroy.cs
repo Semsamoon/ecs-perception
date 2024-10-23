@@ -4,8 +4,8 @@ using Unity.Entities;
 
 namespace ECSPerception
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightContactUpdateConecast))]
-    public partial struct SystemSenseSightContactUpdateLinecast : ISystem
+    [BurstCompile, UpdateInGroup(typeof(GroupSensePreDestroy))]
+    public partial struct SystemSenseSightContactUpdateLinecastDestroy : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
@@ -19,17 +19,6 @@ namespace ECSPerception
         public void OnUpdate(ref SystemState state)
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
-
-            foreach (var (_, entity) in
-                     SystemAPI.Query<TagSenseSightContactConecastResult>().WithDisabled<TagSenseSightContactLinecastWait>().WithEntityAccess())
-            {
-                var eventCreate = commands.CreateEntity();
-                commands.AddComponent(eventCreate, new EventSenseLinecastCreate());
-                commands.AddComponent(eventCreate, new EventSenseSightLinecastCreate
-                {
-                    Contact = entity,
-                });
-            }
 
             foreach (var linecast in
                      SystemAPI.Query<RefRO<TagSenseSightContactLinecastWait>>().WithDisabled<TagSenseSightContactConecastResult>())

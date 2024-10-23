@@ -8,7 +8,7 @@ using Unity.Transforms;
 namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateLinecast), OrderFirst = true)]
-    public partial struct SystemSenseLinecast : ISystem
+    public partial struct SystemSenseLinecastResult : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
@@ -37,12 +37,10 @@ namespace ECSPerception
                 var receiverTransform = SystemAPI.GetComponentRO<LocalToWorld>(entityReceiverTransform).ValueRO;
                 var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(entitySourceTransform).ValueRO;
 
-                if (IsLineCastSucceed(entityReceiverOwner, receiverTransform.Position + receiverOffset,
-                        entitySourceOwner, sourceTransform.Position + sourceOffset, ref collisionWorld))
-                {
-                    commands.SetComponentEnabled<TagSenseLinecastSuccess>(entity, true);
-                }
+                var result = IsLinecastSucceed(entityReceiverOwner, receiverTransform.Position + receiverOffset,
+                    entitySourceOwner, sourceTransform.Position + sourceOffset, ref collisionWorld);
 
+                commands.SetComponentEnabled<TagSenseLinecastResult>(entity, result);
                 commands.SetComponentEnabled<TagSenseLinecastWait>(entity, false);
             }
 
@@ -50,7 +48,7 @@ namespace ECSPerception
         }
 
         [BurstCompile]
-        private bool IsLineCastSucceed(
+        private bool IsLinecastSucceed(
             Entity entityReceiverOwner, in float3 receiverPosition,
             Entity entitySourceOwner, in float3 sourcePosition, ref CollisionWorld collisionWorld)
         {
