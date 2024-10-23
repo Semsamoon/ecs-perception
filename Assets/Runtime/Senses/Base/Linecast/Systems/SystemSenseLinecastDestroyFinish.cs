@@ -4,8 +4,8 @@ using Unity.Entities;
 
 namespace ECSPerception
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateLinecast), OrderLast = true), UpdateAfter(typeof(SystemSenseLinecastResult))]
-    public partial struct SystemSenseLinecastFinish : ISystem
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseDestroyLinecast), OrderLast = true), UpdateAfter(typeof(SystemSenseLinecastDestroyEntity))]
+    public partial struct SystemSenseLinecastDestroyFinish : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
@@ -20,8 +20,7 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseLinecast>>().WithDisabled<TagSenseLinecastWait>().WithEntityAccess())
+            foreach (var (_, entity) in SystemAPI.Query<RefRO<EventSenseLinecastDestroy>>().WithEntityAccess())
             {
                 commands.DestroyEntity(entity);
             }

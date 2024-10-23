@@ -24,12 +24,12 @@ namespace ECSPerception
             {
                 var entity = eventCreate.ValueRO.Entity;
                 commands.AddComponent(entity, new ComponentSenseSightContact());
-                commands.AddComponent(entity, new TagSenseSightContactConeIn());
-                commands.SetComponentEnabled<TagSenseSightContactConeIn>(entity, false);
-                commands.AddComponent(entity, new TagSenseContactLineCast());
-                commands.SetComponentEnabled<TagSenseContactLineCast>(entity, false);
-                commands.AddComponent(entity, new TagSenseContactLineUp());
-                commands.SetComponentEnabled<TagSenseContactLineUp>(entity, false);
+                commands.AddComponent(entity, new TagSenseSightContactConecastResult());
+                commands.SetComponentEnabled<TagSenseSightContactConecastResult>(entity, false);
+                commands.AddComponent(entity, new TagSenseSightContactLinecastWait());
+                commands.SetComponentEnabled<TagSenseSightContactLinecastWait>(entity, false);
+                commands.AddComponent(entity, new TagSenseSightContactLinecastResult());
+                commands.SetComponentEnabled<TagSenseSightContactLinecastResult>(entity, false);
             }
 
             commands.Playback(state.EntityManager);

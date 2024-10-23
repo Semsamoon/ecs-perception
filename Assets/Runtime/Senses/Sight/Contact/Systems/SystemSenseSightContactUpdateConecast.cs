@@ -7,7 +7,7 @@ using Unity.Transforms;
 namespace ECSPerception
 {
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true)]
-    public partial struct SystemSenseSightContactUpdateCone : ISystem
+    public partial struct SystemSenseSightContactUpdateConecast : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
@@ -24,21 +24,21 @@ namespace ECSPerception
 
             foreach (var (contact, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact>()
-                         .WithDisabled<TagSenseSightContactConeIn>().WithEntityAccess())
+                         .WithDisabled<TagSenseSightContactConecastResult>().WithEntityAccess())
             {
                 if (IsInCone(ref state, contact, false))
                 {
-                    commands.SetComponentEnabled<TagSenseSightContactConeIn>(entity, true);
+                    commands.SetComponentEnabled<TagSenseSightContactConecastResult>(entity, true);
                 }
             }
 
             foreach (var (contact, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>()
-                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConeIn>().WithEntityAccess())
+                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConecastResult>().WithEntityAccess())
             {
                 if (!IsInCone(ref state, contact, true))
                 {
-                    commands.SetComponentEnabled<TagSenseSightContactConeIn>(entity, false);
+                    commands.SetComponentEnabled<TagSenseSightContactConecastResult>(entity, false);
                 }
             }
 

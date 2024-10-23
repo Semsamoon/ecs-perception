@@ -6,7 +6,7 @@ using Unity.Transforms;
 
 namespace ECSPerception
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseCreateLinecast))]
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseCreateLinecast)), UpdateAfter(typeof(SystemSenseSightLinecastCreateEntity))]
     public partial struct SystemSenseSightLinecastCreateComponents : ISystem
     {
         public void OnCreate(ref SystemState state)
@@ -22,10 +22,10 @@ namespace ECSPerception
         {
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (eventCreate, _) in
+            foreach (var (eventCreate, eventSightCreate) in
                      SystemAPI.Query<RefRO<EventSenseLinecastCreate>, RefRO<EventSenseSightLinecastCreate>>())
             {
-                var contact = SystemAPI.GetComponentRO<ComponentSenseContact>(eventCreate.ValueRO.Contact);
+                var contact = SystemAPI.GetComponentRO<ComponentSenseContact>(eventSightCreate.ValueRO.Contact);
                 var (entityReceiver, entitySource) = contact.ValueRO;
 
                 var receiverComponent = SystemAPI.GetComponentRO<ComponentSenseReceiver>(entityReceiver);
@@ -36,13 +36,16 @@ namespace ECSPerception
 
                 commands.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseLinecast
                 {
-                    Owner = eventCreate.ValueRO.Contact,
                     ReceiverTransform = receiverComponent.ValueRO.Transform,
                     ReceiverOwner = receiverComponent.ValueRO.Owner,
                     ReceiverOffset = receiverTransform.Forward * -receiver.BackwardOffset,
                     SourceTransform = sourceComponent.ValueRO.Transform,
                     SourceOwner = sourceComponent.ValueRO.Owner,
                     SourceOffset = float3.zero,
+                });
+                commands.AddComponent(eventCreate.ValueRO.Entity, new ComponentSenseSightLinecast
+                {
+                    Contact = eventSightCreate.ValueRO.Contact,
                 });
             }
 

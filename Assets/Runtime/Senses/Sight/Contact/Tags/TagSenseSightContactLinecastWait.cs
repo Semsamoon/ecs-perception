@@ -2,7 +2,7 @@
 
 namespace ECSPerception
 {
-    public struct EventSenseLinecastCreate : IComponentData
+    public struct TagSenseSightContactLinecastWait : IComponentData, IEnableableComponent
     {
         public Entity Entity;
     }

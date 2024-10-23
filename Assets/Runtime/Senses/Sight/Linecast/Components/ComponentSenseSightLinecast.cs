@@ -2,7 +2,7 @@
 
 namespace ECSPerception
 {
-    public struct EventSenseSightLinecastCreate : IComponentData
+    public struct ComponentSenseSightLinecast : IComponentData
     {
         public Entity Contact;
     }

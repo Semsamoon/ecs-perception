@@ -2,7 +2,7 @@
 
 namespace ECSPerception
 {
-    public struct EventSenseLinecastCreate : IComponentData
+    public struct EventSenseLinecastDestroy : IComponentData
     {
         public Entity Entity;
     }

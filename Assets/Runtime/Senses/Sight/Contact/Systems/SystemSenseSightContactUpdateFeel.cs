@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace ECSPerception
 {
-    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightContactUpdateCone))]
+    [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateContact), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightContactUpdateLinecast))]
     public partial struct SystemSenseSightContactUpdateFeel : ISystem
     {
         public void OnCreate(ref SystemState state)
@@ -21,79 +21,30 @@ namespace ECSPerception
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact, TagSenseSightContactConeIn>()
-                         .WithDisabled<TagSenseContactFeel, TagSenseContactLineCast, TagSenseContactLineUp>().WithEntityAccess())
-            {
-                Linecast(ref commands, entity);
-            }
-
-            foreach (var (_, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>()
-                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConeIn, TagSenseContactLineUp>()
+                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConecastResult, TagSenseSightContactLinecastResult>()
                          .WithDisabled<TagSenseContactFeel>().WithEntityAccess())
             {
-                Linecast(ref commands, entity);
-                SetFeel(ref commands, entity, true);
+                commands.SetComponentEnabled<TagSenseContactFeel>(entity, true);
             }
 
             foreach (var (_, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>()
-                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConeIn, TagSenseContactLineUp>()
-                         .WithAll<TagSenseContactFeel>().WithEntityAccess())
+                         .WithAll<ComponentSenseSightContact, TagSenseContactFeel>()
+                         .WithDisabled<TagSenseSightContactConecastResult>().WithEntityAccess())
             {
-                Linecast(ref commands, entity);
+                commands.SetComponentEnabled<TagSenseContactFeel>(entity, false);
             }
 
             foreach (var (_, entity) in
                      SystemAPI.Query<RefRO<ComponentSenseContact>>()
-                         .WithAll<ComponentSenseSightContact, TagSenseSightContactConeIn, TagSenseContactFeel>()
-                         .WithDisabled<TagSenseContactLineCast, TagSenseContactLineUp>().WithEntityAccess())
+                         .WithAll<ComponentSenseSightContact, TagSenseContactFeel>()
+                         .WithDisabled<TagSenseSightContactLinecastResult>().WithEntityAccess())
             {
-                Linecast(ref commands, entity);
-                SetFeel(ref commands, entity, false);
-            }
-
-            foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>().WithAll<ComponentSenseSightContact, TagSenseContactFeel>()
-                         .WithDisabled<TagSenseSightContactConeIn>().WithEntityAccess())
-            {
-                SetFeel(ref commands, entity, false);
-            }
-
-            foreach (var (_, entity) in
-                     SystemAPI.Query<RefRO<ComponentSenseContact>>()
-                         .WithAll<ComponentSenseSightContact, TagSenseContactLineUp>().WithEntityAccess())
-            {
-                commands.SetComponentEnabled<TagSenseContactLineUp>(entity, false);
+                commands.SetComponentEnabled<TagSenseContactFeel>(entity, false);
             }
 
             commands.Playback(state.EntityManager);
-        }
-
-        [BurstCompile]
-        private void Linecast(ref EntityCommandBuffer commands, Entity entity)
-        {
-            commands.SetComponentEnabled<TagSenseContactLineCast>(entity, true);
-
-            var eventLinecastCreate = commands.CreateEntity();
-            commands.AddComponent(eventLinecastCreate, new EventSenseLinecastCreate
-            {
-                Contact = entity,
-            });
-            commands.AddComponent(eventLinecastCreate, new EventSenseSightLinecastCreate());
-        }
-
-        [BurstCompile]
-        private void SetFeel(ref EntityCommandBuffer commands, Entity entity, bool isFeel)
-        {
-            commands.SetComponentEnabled<TagSenseContactFeel>(entity, isFeel);
-
-            var eventUpdate = commands.CreateEntity();
-            commands.AddComponent(eventUpdate, new EventSenseContactUpdateFeel
-            {
-                Entity = entity,
-            });
-            commands.AddComponent(eventUpdate, new EventSenseSightContactUpdateFeel());
         }
     }
 }

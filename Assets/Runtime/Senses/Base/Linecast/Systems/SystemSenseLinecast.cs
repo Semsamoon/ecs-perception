@@ -10,8 +10,6 @@ namespace ECSPerception
     [BurstCompile, UpdateInGroup(typeof(GroupSenseUpdateLinecast), OrderFirst = true)]
     public partial struct SystemSenseLinecast : ISystem
     {
-        private float _timer;
-
         public void OnCreate(ref SystemState state)
         {
         }
