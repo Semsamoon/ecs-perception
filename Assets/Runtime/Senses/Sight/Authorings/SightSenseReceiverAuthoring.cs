@@ -27,6 +27,7 @@ namespace ECSPerception.Sight
                     Offset = authoring._offset,
                     RememberTime = authoring._rememberTime,
                 });
+                AddComponent<TagSenseSightSingleCast>(entity);
                 AddBuffer<BufferSenseSightActive>(entity);
                 AddBuffer<BufferSenseSightNeedCast>(entity);
                 AddBuffer<BufferSenseSightRemember>(entity);

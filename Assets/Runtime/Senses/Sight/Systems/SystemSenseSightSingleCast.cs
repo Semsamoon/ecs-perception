@@ -44,6 +44,7 @@ namespace ECSPerception.Sight
 
             foreach (var (receiverData, receiverTransform, receiver) in SystemAPI
                          .Query<RefRO<ComponentSenseSightReceiver>, RefRO<LocalToWorld>>()
+                         .WithAll<TagSenseSightSingleCast>()
                          .WithAll<BufferSenseSightNeedCast, BufferSenseSightActive, BufferSenseSightRemember>()
                          .WithEntityAccess())
             {
@@ -99,6 +100,7 @@ namespace ECSPerception.Sight
 
             foreach (var (receiverData, receiverTransform, receiver) in SystemAPI
                          .Query<RefRO<ComponentSenseSightReceiver>, RefRO<LocalToWorld>>()
+                         .WithAll<TagSenseSightSingleCast>()
                          .WithAll<BufferSenseSightActive, BufferSenseSightNeedCast, BufferSenseSightRemember>()
                          .WithEntityAccess())
             {
