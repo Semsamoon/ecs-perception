@@ -179,11 +179,13 @@ namespace ECSPerception.Sight
                     continue;
                 }
 
-                if (!actives.Has(source))
+                if (actives.Has(source))
                 {
-                    _commands.AppendToBuffer(receiver, new BufferSenseSightActive(source));
-                    remembers.Remove(source);
+                    continue;
                 }
+
+                _commands.AppendToBuffer(receiver, new BufferSenseSightActive(source));
+                remembers.Remove(source);
             }
         }
     }
