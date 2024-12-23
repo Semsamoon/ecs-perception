@@ -42,30 +42,6 @@ namespace ECSPerception.Sight
             _commands = new EntityCommandBuffer(Allocator.Temp);
             _raycasts = new NativeArray<RaycastSenseSightData>(_raycastsLimitAmount, Allocator.TempJob);
 
-            var deltaTime = SystemAPI.Time.DeltaTime;
-
-            foreach (var (_, receiver) in SystemAPI
-                         .Query<RefRO<ComponentSenseSightReceiver>>()
-                         .WithAll<BufferSenseSightRemember>()
-                         .WithEntityAccess())
-            {
-                var remembers = SystemAPI.GetBuffer<BufferSenseSightRemember>(receiver);
-
-                for (var i = remembers.Length - 1; i >= 0; i--)
-                {
-                    var remember = remembers[i];
-                    remember.Timer -= deltaTime;
-
-                    if (remember.Timer > 0)
-                    {
-                        remembers[i] = remember;
-                        continue;
-                    }
-
-                    remembers.RemoveAt(i);
-                }
-            }
-
             foreach (var (receiverData, receiverTransform, receiver) in SystemAPI
                          .Query<RefRO<ComponentSenseSightReceiver>, RefRO<LocalToWorld>>()
                          .WithAll<BufferSenseSightNeedCast, BufferSenseSightActive, BufferSenseSightRemember>()
