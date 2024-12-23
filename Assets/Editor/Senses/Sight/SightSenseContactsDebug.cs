@@ -1,25 +1,14 @@
-﻿using Unity.Collections;
+﻿using ECSPerception.Sight;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace ECSPerception.Editor
+namespace ECSPerception.Editor.Sight
 {
     public sealed class SightSenseContactsDebug : MonoBehaviour
     {
-        private EntityManager _manager;
-        private EntityQuery _contactFeelQuery;
-        private EntityQuery _contactRememberQuery;
-
-        private void Start()
-        {
-            _manager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            var builder = new EntityQueryBuilder(Allocator.Temp);
-
-            _contactFeelQuery = builder.WithAll<ComponentSenseContact, TagSenseContactFeel>().Build(_manager);
-            _contactRememberQuery = builder.Reset().WithAll<ComponentSenseContactRemember, TagSenseContactFeelRemember>()
-                .WithDisabled<TagSenseContactFeel>().Build(_manager);
-        }
+        [SerializeField, Min(0)] private float _marksRadius = 0.5f;
 
         private void OnDrawGizmos()
         {
@@ -28,19 +17,52 @@ namespace ECSPerception.Editor
                 return;
             }
 
+            var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+
             Gizmos.color = Color.green;
 
-            foreach (var contact in _contactFeelQuery.ToComponentDataArray<ComponentSenseContact>(Allocator.Temp))
+            foreach (var receiver in new EntityQueryBuilder(Allocator.Temp)
+                         .WithAll<BufferSenseSightActive>()
+                         .Build(entityManager)
+                         .ToEntityArray(Allocator.Temp))
             {
-                var source = _manager.GetComponentData<ComponentSenseSource>(contact.Source).Transform;
-                Gizmos.DrawWireSphere(_manager.GetComponentData<LocalToWorld>(source).Position, 0.5f);
+                var receiverData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightReceiver>(receiver);
+                var receiverTransform = entityManager.GetComponentData<LocalToWorld>(receiver);
+                var receiverPosition = receiverTransform.Value.TransformPoint(receiverData.Offset);
+                var actives = entityManager.GetBuffer<BufferSenseSightActive>(receiver);
+
+                foreach (var contact in actives)
+                {
+                    var sourceData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightSource>(contact.Source);
+                    var sourceTransform = entityManager.GetComponentData<LocalToWorld>(contact.Source);
+                    var sourcePosition = sourceTransform.Value.TransformPoint(sourceData.Offset);
+
+                    Gizmos.DrawLine(receiverPosition, sourcePosition);
+                    Gizmos.DrawWireSphere(sourcePosition, _marksRadius);
+                }
             }
 
             Gizmos.color = Color.yellow;
 
-            foreach (var remember in _contactRememberQuery.ToComponentDataArray<ComponentSenseContactRemember>(Allocator.Temp))
+            foreach (var receiver in new EntityQueryBuilder(Allocator.Temp)
+                         .WithAll<BufferSenseSightRemember>()
+                         .Build(entityManager)
+                         .ToEntityArray(Allocator.Temp))
             {
-                Gizmos.DrawWireSphere(remember.SourceTransform.Position, 0.5f);
+                var receiverData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightReceiver>(receiver);
+                var receiverTransform = entityManager.GetComponentData<LocalToWorld>(receiver);
+                var receiverPosition = receiverTransform.Value.TransformPoint(receiverData.Offset);
+                var remembers = entityManager.GetBuffer<BufferSenseSightRemember>(receiver);
+
+                foreach (var contact in remembers)
+                {
+                    var sourceData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightSource>(contact.Source);
+                    var sourceTransform = entityManager.GetComponentData<LocalToWorld>(contact.Source);
+                    var sourcePosition = sourceTransform.Value.TransformPoint(sourceData.Offset);
+
+                    Gizmos.DrawLine(receiverPosition, sourcePosition);
+                    Gizmos.DrawWireSphere(sourcePosition, _marksRadius);
+                }
             }
         }
     }
