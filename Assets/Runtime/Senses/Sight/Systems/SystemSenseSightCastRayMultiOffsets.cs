@@ -46,14 +46,14 @@ namespace ECSPerception.Sight
 
                     var sourcePosition = sourcePositionCenter;
                     var raycastData = new RaycastSenseSightCast
-                        { ReceiverPosition = receiverPosition, Receiver = receiver, SourcePosition = sourcePosition, Source = source };
+                        { Receiver = receiver, ReceiverPosition = receiverPosition, Source = source, SourcePosition = sourcePosition };
                     commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
 
                     foreach (var offset in offsets)
                     {
                         sourcePosition = sourcePositionCenter + offset.Offset;
                         raycastData = new RaycastSenseSightCast
-                            { ReceiverPosition = receiverPosition, Receiver = receiver, SourcePosition = sourcePosition, Source = source };
+                            { Receiver = receiver, ReceiverPosition = receiverPosition, Source = source, SourcePosition = sourcePosition };
 
                         commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
                     }

@@ -5,9 +5,9 @@ namespace ECSPerception.Sight
 {
     public struct RaycastSenseSightCast
     {
-        public float3 ReceiverPosition;
         public Entity Receiver;
-        public float3 SourcePosition;
+        public float3 ReceiverPosition;
         public Entity Source;
+        public float3 SourcePosition;
     }
 }

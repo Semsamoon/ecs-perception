@@ -49,10 +49,10 @@ namespace ECSPerception.Sight
                 {
                     if (!ConecastSenseSight.IsInside(receiverData, receiverTransform, sourceData, sourceTransform, actives.Has(source)))
                     {
-                        if (actives.Remove(source) && receiverData.ValueRO.RememberTime > 0)
+                        if (actives.Take(source, out var active) && receiverData.ValueRO.RememberTime > 0)
                         {
-                            commands.AppendToBuffer(receiver,
-                                new BufferSenseSightRemember { Source = source, Timer = receiverData.ValueRO.RememberTime });
+                            commands.AppendToBuffer(receiver, new BufferSenseSightRemember
+                                { Source = source, SourcePosition = active.SourcePosition, Timer = receiverData.ValueRO.RememberTime });
                         }
 
                         continue;

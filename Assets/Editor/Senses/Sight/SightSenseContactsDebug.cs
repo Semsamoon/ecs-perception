@@ -26,14 +26,14 @@ namespace ECSPerception.Editor.Sight
                          .Build(entityManager)
                          .ToEntityArray(Allocator.Temp))
             {
-                var receiverData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightReceiver>(receiver);
+                var receiverData = entityManager.GetComponentData<ComponentSenseSightReceiver>(receiver);
                 var receiverTransform = entityManager.GetComponentData<LocalToWorld>(receiver);
                 var receiverPosition = receiverTransform.Value.TransformPoint(receiverData.Offset);
                 var actives = entityManager.GetBuffer<BufferSenseSightActive>(receiver);
 
                 foreach (var contact in actives)
                 {
-                    var sourceData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightSource>(contact.Source);
+                    var sourceData = entityManager.GetComponentData<ComponentSenseSightSource>(contact.Source);
                     var sourceTransform = entityManager.GetComponentData<LocalToWorld>(contact.Source);
                     var sourcePosition = sourceTransform.Value.TransformPoint(sourceData.Offset);
 
@@ -49,19 +49,15 @@ namespace ECSPerception.Editor.Sight
                          .Build(entityManager)
                          .ToEntityArray(Allocator.Temp))
             {
-                var receiverData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightReceiver>(receiver);
+                var receiverData = entityManager.GetComponentData<ComponentSenseSightReceiver>(receiver);
                 var receiverTransform = entityManager.GetComponentData<LocalToWorld>(receiver);
                 var receiverPosition = receiverTransform.Value.TransformPoint(receiverData.Offset);
                 var remembers = entityManager.GetBuffer<BufferSenseSightRemember>(receiver);
 
                 foreach (var contact in remembers)
                 {
-                    var sourceData = entityManager.GetComponentData<ECSPerception.Sight.ComponentSenseSightSource>(contact.Source);
-                    var sourceTransform = entityManager.GetComponentData<LocalToWorld>(contact.Source);
-                    var sourcePosition = sourceTransform.Value.TransformPoint(sourceData.Offset);
-
-                    Gizmos.DrawLine(receiverPosition, sourcePosition);
-                    Gizmos.DrawWireSphere(sourcePosition, _marksRadius);
+                    Gizmos.DrawLine(receiverPosition, contact.SourcePosition);
+                    Gizmos.DrawWireSphere(contact.SourcePosition, _marksRadius);
                 }
             }
         }
