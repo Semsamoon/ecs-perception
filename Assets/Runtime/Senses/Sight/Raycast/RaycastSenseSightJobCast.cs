@@ -1,6 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.Physics;
 
 namespace ECSPerception.Sight
@@ -24,7 +25,10 @@ namespace ECSPerception.Sight
                 Filter = CollisionFilter.Default,
             };
 
-            var hitCollector = new RaycastSenseSightCollector<RaycastHit>(Raycasts[index].Receiver);
+            var distanceSquared = math.distancesq(Raycasts[index].ReceiverPosition, Raycasts[index].SourcePosition);
+            var minFraction = Raycasts[index].NearClipRadiusSquared / distanceSquared;
+
+            var hitCollector = new RaycastSenseSightCollector<RaycastHit>(Raycasts[index].Receiver, minFraction);
             collisionWorld.CastRay(raycast, ref hitCollector);
 
             Results[index] = hitCollector.ClosestHit.Entity == Raycasts[index].Source;

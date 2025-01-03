@@ -9,6 +9,7 @@ namespace ECSPerception.Sight
     public struct RaycastSenseSightCollector<T> : ICollector<T> where T : struct, IQueryResult
     {
         private readonly Entity _excludedEntity;
+        private readonly float _minFraction;
 
         private T _closestHit;
         public T ClosestHit => _closestHit;
@@ -18,10 +19,11 @@ namespace ECSPerception.Sight
 
         public float MaxFraction { get; private set; }
 
-        public RaycastSenseSightCollector(Entity excludedEntity)
+        public RaycastSenseSightCollector(Entity excludedEntity, float minFraction)
         {
             _excludedEntity = excludedEntity;
             _closestHit = default;
+            _minFraction = minFraction;
             MaxFraction = 1;
         }
 
@@ -30,7 +32,7 @@ namespace ECSPerception.Sight
         {
             Assert.IsTrue(hit.Fraction <= MaxFraction);
 
-            if (hit.Entity == _excludedEntity)
+            if (hit.Entity == _excludedEntity || hit.Fraction < _minFraction)
             {
                 return false;
             }

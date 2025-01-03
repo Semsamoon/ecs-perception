@@ -9,5 +9,6 @@ namespace ECSPerception.Sight
         public float3 ReceiverPosition;
         public Entity Source;
         public float3 SourcePosition;
+        public float NearClipRadiusSquared;
     }
 }
