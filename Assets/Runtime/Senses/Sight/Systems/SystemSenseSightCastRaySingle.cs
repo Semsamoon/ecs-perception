@@ -42,9 +42,10 @@ namespace ECSPerception.Sight
                     var sourceData = SystemAPI.GetComponentRO<ComponentSenseSightSource>(source);
                     var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(source);
                     var sourcePosition = sourceTransform.ValueRO.Value.TransformPoint(sourceData.ValueRO.Offset);
-                    var raycastData = new RaycastSenseSightCast(receiverPosition, receiver, sourcePosition, source);
+                    var raycastData = new RaycastSenseSightCast
+                        { ReceiverPosition = receiverPosition, Receiver = receiver, SourcePosition = sourcePosition, Source = source };
 
-                    commands.AppendToBuffer(receiver, new BufferSenseSightCastPending(raycastData));
+                    commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
                     needs.RemoveAt(i);
                 }
 

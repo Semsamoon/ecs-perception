@@ -51,13 +51,14 @@ namespace ECSPerception.Sight
                     {
                         if (actives.Remove(source) && receiverData.ValueRO.RememberTime > 0)
                         {
-                            commands.AppendToBuffer(receiver, new BufferSenseSightRemember(source, receiverData.ValueRO.RememberTime));
+                            commands.AppendToBuffer(receiver,
+                                new BufferSenseSightRemember { Source = source, Timer = receiverData.ValueRO.RememberTime });
                         }
 
                         continue;
                     }
 
-                    commands.AppendToBuffer(receiver, new BufferSenseSightCastNeed(source));
+                    commands.AppendToBuffer(receiver, new BufferSenseSightCastNeed { Source = source });
                 }
 
                 commands.SetComponentEnabled<BufferSenseSightCastNeed>(receiver, true);

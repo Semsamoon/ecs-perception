@@ -104,7 +104,8 @@ namespace ECSPerception.Sight
                 {
                     if (raycastMeta.Actives.Remove(raycast.Source) && raycastMeta.RememberTime > 0)
                     {
-                        commands.AppendToBuffer(raycast.Receiver, new BufferSenseSightRemember(raycast.Source, raycastMeta.RememberTime));
+                        commands.AppendToBuffer(raycast.Receiver,
+                            new BufferSenseSightRemember { Source = raycast.Source, Timer = raycastMeta.RememberTime });
                     }
 
                     continue;
@@ -115,7 +116,7 @@ namespace ECSPerception.Sight
                     continue;
                 }
 
-                commands.AppendToBuffer(raycast.Receiver, new BufferSenseSightActive(raycast.Source));
+                commands.AppendToBuffer(raycast.Receiver, new BufferSenseSightActive { Source = raycast.Source });
                 raycastMeta.Remembers.Remove(raycast.Source);
             }
 

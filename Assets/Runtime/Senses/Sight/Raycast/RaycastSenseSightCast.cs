@@ -9,13 +9,5 @@ namespace ECSPerception.Sight
         public Entity Receiver;
         public float3 SourcePosition;
         public Entity Source;
-
-        public RaycastSenseSightCast(float3 receiverPosition, Entity receiver, float3 sourcePosition, Entity source)
-        {
-            ReceiverPosition = receiverPosition;
-            Receiver = receiver;
-            SourcePosition = sourcePosition;
-            Source = source;
-        }
     }
 }

@@ -45,15 +45,17 @@ namespace ECSPerception.Sight
                     var sourcePositionCenter = sourceTransform.ValueRO.Value.TransformPoint(sourceData.ValueRO.Offset);
 
                     var sourcePosition = sourcePositionCenter;
-                    var raycastData = new RaycastSenseSightCast(receiverPosition, receiver, sourcePosition, source);
-                    commands.AppendToBuffer(receiver, new BufferSenseSightCastPending(raycastData));
+                    var raycastData = new RaycastSenseSightCast
+                        { ReceiverPosition = receiverPosition, Receiver = receiver, SourcePosition = sourcePosition, Source = source };
+                    commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
 
                     foreach (var offset in offsets)
                     {
                         sourcePosition = sourcePositionCenter + offset.Offset;
-                        raycastData = new RaycastSenseSightCast(receiverPosition, receiver, sourcePosition, source);
+                        raycastData = new RaycastSenseSightCast
+                            { ReceiverPosition = receiverPosition, Receiver = receiver, SourcePosition = sourcePosition, Source = source };
 
-                        commands.AppendToBuffer(receiver, new BufferSenseSightCastPending(raycastData));
+                        commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
                     }
 
                     needs.RemoveAt(i);
