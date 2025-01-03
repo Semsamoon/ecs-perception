@@ -1,6 +1,9 @@
 ﻿using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
+#if UNITY_EDITOR
+using ECSPerception.Editor;
+#endif
 
 namespace ECSPerception.Sight
 {
@@ -35,6 +38,11 @@ namespace ECSPerception.Sight
                 AddBuffer<BufferSenseSightRemember>(entity);
                 SetComponentEnabled<BufferSenseSightCastNeed>(entity, false);
                 SetComponentEnabled<BufferSenseSightCastPending>(entity, false);
+
+#if UNITY_EDITOR
+                AddComponent<TagSenseDebug>(entity);
+                SetComponentEnabled<TagSenseDebug>(entity, false);
+#endif
             }
         }
 

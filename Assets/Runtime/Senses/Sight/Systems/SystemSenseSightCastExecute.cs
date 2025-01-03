@@ -111,6 +111,12 @@ namespace ECSPerception.Sight
 
             for (var i = 0; i < index; i++)
             {
+                if (!SystemAPI.HasComponent<TagSenseDebug>(raycasts[i].Receiver)
+                    || !SystemAPI.IsComponentEnabled<TagSenseDebug>(raycasts[i].Receiver))
+                {
+                    continue;
+                }
+
                 var receiverPosition = raycasts[i].ReceiverPosition;
                 var sourcePosition = raycasts[i].SourcePosition;
                 var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycasts[i].Source).Position;
@@ -139,8 +145,12 @@ namespace ECSPerception.Sight
                 }
 
 #if UNITY_EDITOR
-                var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycast.Source).Position;
-                ExtendedDebug.DrawOctahedron(sourcePositionReal, rayDebug.SizeOctahedronStandard, rayDebug.ColorSuccess);
+                if (SystemAPI.HasComponent<TagSenseDebug>(raycast.Receiver)
+                    && SystemAPI.IsComponentEnabled<TagSenseDebug>(raycast.Receiver))
+                {
+                    var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycast.Source).Position;
+                    ExtendedDebug.DrawOctahedron(sourcePositionReal, rayDebug.SizeOctahedronStandard, rayDebug.ColorSuccess);
+                }
 #endif
 
                 if (raycastMeta.Actives.Has(raycast.Source))

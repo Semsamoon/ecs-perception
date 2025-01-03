@@ -51,6 +51,12 @@ namespace ECSPerception.Sight
                         remembers[i] = remember;
 
 #if UNITY_EDITOR
+                        if (!SystemAPI.HasComponent<TagSenseDebug>(receiver)
+                            || !SystemAPI.IsComponentEnabled<TagSenseDebug>(receiver))
+                        {
+                            continue;
+                        }
+
                         var rayDebug = SystemAPI.GetSingleton<ComponentSenseSightRayDebug>();
                         var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(remember.Source).Position;
                         ExtendedDebug.DrawOctahedron(remember.SourcePosition, rayDebug.SizeOctahedronSmall, rayDebug.ColorNeutral);
