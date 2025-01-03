@@ -1,5 +1,11 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
+#if UNITY_EDITOR
+using ECSPerception.Editor;
+using ECSPerception.Editor.Sight;
+using Unity.Transforms;
+using UnityEngine;
+#endif
 
 namespace ECSPerception.Sight
 {
@@ -10,6 +16,12 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+#if UNITY_EDITOR
+            if (!SystemAPI.HasSingleton<ComponentSenseSightRayDebug>())
+            {
+                state.EntityManager.CreateSingleton(ComponentSenseSightRayDebug.Default);
+            }
+#endif
         }
 
         [BurstCompile]
@@ -37,6 +49,15 @@ namespace ECSPerception.Sight
                     if (remember.Timer > 0)
                     {
                         remembers[i] = remember;
+
+#if UNITY_EDITOR
+                        var rayDebug = SystemAPI.GetSingleton<ComponentSenseSightRayDebug>();
+                        var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(remember.Source).Position;
+                        ExtendedDebug.DrawOctahedron(remember.SourcePosition, rayDebug.SizeOctahedronSmall, rayDebug.ColorNeutral);
+                        ExtendedDebug.DrawOctahedron(sourcePositionReal, rayDebug.SizeOctahedronStandard, rayDebug.ColorNeutral);
+                        Debug.DrawLine(remember.SourcePosition, sourcePositionReal, rayDebug.ColorNeutral);
+#endif
+
                         continue;
                     }
 

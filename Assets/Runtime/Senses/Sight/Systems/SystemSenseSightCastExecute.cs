@@ -3,6 +3,12 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Physics;
+#if UNITY_EDITOR
+using ECSPerception.Editor;
+using ECSPerception.Editor.Sight;
+using Unity.Transforms;
+using UnityEngine;
+#endif
 
 namespace ECSPerception.Sight
 {
@@ -17,6 +23,13 @@ namespace ECSPerception.Sight
             {
                 state.EntityManager.CreateSingleton(ComponentSenseSightSettings.Default);
             }
+
+#if UNITY_EDITOR
+            if (!SystemAPI.HasSingleton<ComponentSenseSightRayDebug>())
+            {
+                state.EntityManager.CreateSingleton(ComponentSenseSightRayDebug.Default);
+            }
+#endif
         }
 
         [BurstCompile]
@@ -93,6 +106,21 @@ namespace ECSPerception.Sight
             state.Dependency = jobRaycast;
             jobRaycast.Complete();
 
+#if UNITY_EDITOR
+            var rayDebug = SystemAPI.GetSingleton<ComponentSenseSightRayDebug>();
+
+            for (var i = 0; i < index; i++)
+            {
+                var receiverPosition = raycasts[i].ReceiverPosition;
+                var sourcePosition = raycasts[i].SourcePosition;
+                var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycasts[i].Source).Position;
+                var color = results[i] ? rayDebug.ColorSuccess : rayDebug.ColorFailure;
+                Debug.DrawLine(receiverPosition, sourcePosition, color);
+                Debug.DrawLine(sourcePosition, sourcePositionReal, color);
+                ExtendedDebug.DrawOctahedron(sourcePosition, rayDebug.SizeOctahedronSmall, color);
+            }
+#endif
+
             var resultsEnumerator = new RaycastSenseSightResult(raycasts, raycastsMeta, results, index);
 
             while (resultsEnumerator.MoveNext())
@@ -109,6 +137,11 @@ namespace ECSPerception.Sight
 
                     continue;
                 }
+
+#if UNITY_EDITOR
+                var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycast.Source).Position;
+                ExtendedDebug.DrawOctahedron(sourcePositionReal, rayDebug.SizeOctahedronStandard, rayDebug.ColorSuccess);
+#endif
 
                 if (raycastMeta.Actives.Has(raycast.Source))
                 {
