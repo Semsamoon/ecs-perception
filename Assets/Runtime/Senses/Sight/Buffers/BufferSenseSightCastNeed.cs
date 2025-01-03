@@ -2,11 +2,11 @@
 
 namespace ECSPerception.Sight
 {
-    public struct BufferSenseSightNeedCast : IBufferElementData
+    public struct BufferSenseSightCastNeed : IBufferElementData, IEnableableComponent
     {
         public Entity Source;
 
-        public BufferSenseSightNeedCast(Entity source)
+        public BufferSenseSightCastNeed(Entity source)
         {
             Source = source;
         }

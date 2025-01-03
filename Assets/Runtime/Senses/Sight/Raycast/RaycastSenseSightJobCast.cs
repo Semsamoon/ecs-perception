@@ -6,17 +6,17 @@ using Unity.Physics;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    public struct RaycastSenseSightJob : IJobParallelFor
+    public struct RaycastSenseSightJobCast : IJobParallelFor
     {
         [ReadOnly] public CollisionWorld CollisionWorld;
-        [ReadOnly] public NativeArray<RaycastSenseSightData> Raycasts;
-
+        [ReadOnly] public NativeArray<RaycastSenseSightCast> Raycasts;
         [WriteOnly] public NativeArray<bool> Results;
 
         [BurstCompile]
         public void Execute(int index)
         {
-            var collisionWorldCopy = CollisionWorld;
+            var collisionWorld = CollisionWorld;
+
             var raycast = new RaycastInput
             {
                 Start = Raycasts[index].ReceiverPosition,
@@ -25,7 +25,7 @@ namespace ECSPerception.Sight
             };
 
             var hitCollector = new RaycastSenseSightCollector<RaycastHit>(Raycasts[index].Receiver);
-            collisionWorldCopy.CastRay(raycast, ref hitCollector);
+            collisionWorld.CastRay(raycast, ref hitCollector);
 
             Results[index] = hitCollector.ClosestHit.Entity == Raycasts[index].Source;
         }

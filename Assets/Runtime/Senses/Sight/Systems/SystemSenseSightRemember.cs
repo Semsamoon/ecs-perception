@@ -5,7 +5,7 @@ using Unity.Entities;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(GroupSenses)), UpdateBefore(typeof(SystemSenseSightSingleCast))]
+    [UpdateInGroup(typeof(GroupSenses), OrderFirst = true)]
     public partial struct SystemSenseSightRemember : ISystem
     {
         [BurstCompile]

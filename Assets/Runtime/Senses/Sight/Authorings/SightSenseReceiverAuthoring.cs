@@ -27,10 +27,14 @@ namespace ECSPerception.Sight
                     Offset = authoring._offset,
                     RememberTime = authoring._rememberTime,
                 });
-                AddComponent<TagSenseSightSingleCast>(entity);
+                AddComponent<TagSenseSightMultiCast>(entity);
+                AddBuffer<BufferSenseSightCastMultiOffset>(entity);
                 AddBuffer<BufferSenseSightActive>(entity);
-                AddBuffer<BufferSenseSightNeedCast>(entity);
+                AddBuffer<BufferSenseSightCastNeed>(entity);
+                AddBuffer<BufferSenseSightCastPending>(entity);
                 AddBuffer<BufferSenseSightRemember>(entity);
+                SetComponentEnabled<BufferSenseSightCastNeed>(entity, false);
+                SetComponentEnabled<BufferSenseSightCastPending>(entity, false);
             }
         }
 
