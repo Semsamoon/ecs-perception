@@ -1,9 +1,9 @@
 ﻿using Unity.Entities;
 
-namespace ECSPerception.Groups
+namespace ECSPerception
 {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    public partial class GroupSenses : ComponentSystemGroup
+    public partial class SensesSystemGroup : ComponentSystemGroup
     {
     }
 }

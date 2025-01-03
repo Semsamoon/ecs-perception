@@ -1,5 +1,4 @@
-﻿using ECSPerception.Groups;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
@@ -7,7 +6,7 @@ using Unity.Transforms;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(GroupSenses)), UpdateAfter(typeof(SystemSenseSightCastCone))]
+    [UpdateInGroup(typeof(SightSenseSystemGroup)), UpdateAfter(typeof(SystemSenseSightCastCone))]
     public partial struct SystemSenseSightCastRayMultiOffsets : ISystem
     {
         [BurstCompile]

@@ -1,5 +1,4 @@
-﻿using ECSPerception.Groups;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
@@ -7,7 +6,7 @@ using Unity.Transforms;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(GroupSenses))]
+    [UpdateInGroup(typeof(SightSenseSystemGroup))]
     public partial struct SystemSenseSightCastCone : ISystem
     {
         private EntityQuery _queryCastsNeedOrPending;

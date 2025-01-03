@@ -1,5 +1,4 @@
-﻿using ECSPerception.Groups;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -8,7 +7,7 @@ using Unity.Physics;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(GroupSenses), OrderLast = true)]
+    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderLast = true)]
     public partial struct SystemSenseSightCastExecute : ISystem
     {
         [BurstCompile]

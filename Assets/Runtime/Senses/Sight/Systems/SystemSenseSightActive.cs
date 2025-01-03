@@ -1,12 +1,11 @@
-﻿using ECSPerception.Groups;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
 
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(GroupSenses), OrderLast = true), UpdateAfter(typeof(SystemSenseSightCastExecute))]
+    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderLast = true), UpdateAfter(typeof(SystemSenseSightCastExecute))]
     public partial struct SystemSenseSightActive : ISystem
     {
         [BurstCompile]
