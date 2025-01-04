@@ -3,6 +3,7 @@ using Unity.Mathematics;
 using UnityEngine;
 #if UNITY_EDITOR
 using ECSPerception.Editor;
+using UnityEditor;
 #endif
 
 namespace ECSPerception.Sight
@@ -15,6 +16,12 @@ namespace ECSPerception.Sight
         [SerializeField] private float3 _offset = float3.zero;
         [SerializeField, Range(0, 360)] private float _viewAngleDegrees = 90;
         [SerializeField, Min(0)] private float _rememberTime = 1;
+
+        [Header("Debug Options")]
+        [SerializeField] private Color _colorNearClip = Color.gray;
+        [SerializeField] private Color _colorView = Color.green;
+        [SerializeField] private Color _colorLose = Color.red;
+        [SerializeField, Min(0)] private float _curveStep = 0.02f;
 
         private sealed class Baker : Baker<SightSenseReceiverAuthoring>
         {
@@ -53,72 +60,42 @@ namespace ECSPerception.Sight
             _loseRadius = math.max(_loseRadius, _viewRadius);
         }
 
-        private void OnDrawGizmos()
+        private void OnDrawGizmosSelected()
         {
-            var transform = this.transform;
+            if (EditorApplication.isPlaying)
+            {
+                return;
+            }
+
             var forward = transform.forward;
             var right = transform.right;
+            var angleRadians = math.radians(_viewAngleDegrees);
 
-            var vision_x = math.cos(math.radians(_viewAngleDegrees / 2));
-            var vision_y = math.sin(math.radians(_viewAngleDegrees / 2));
+            var x = math.cos(angleRadians / 2);
+            var y = math.sin(angleRadians / 2);
 
             var startPoint = transform.TransformPoint(_offset);
 
-            if (_viewAngleDegrees < 360)
+            if (_viewAngleDegrees != 360)
             {
-                var nearClipPoint1 = startPoint + forward * vision_x * _nearClipRadius + right * vision_y * _nearClipRadius;
-                var nearClipPoint2 = startPoint + forward * vision_x * _nearClipRadius + right * -vision_y * _nearClipRadius;
-                var farClipPoint1 = startPoint + forward * vision_x * _viewRadius + right * vision_y * _viewRadius;
-                var farClipPoint2 = startPoint + forward * vision_x * _viewRadius + right * vision_y * -_viewRadius;
-                var loseClipPoint1 = startPoint + forward * vision_x * _loseRadius + right * vision_y * _loseRadius;
-                var loseClipPoint2 = startPoint + forward * vision_x * _loseRadius + right * vision_y * -_loseRadius;
+                var nearClipPoint1 = startPoint + forward * x * _nearClipRadius + right * y * _nearClipRadius;
+                var nearClipPoint2 = startPoint + forward * x * _nearClipRadius + right * -y * _nearClipRadius;
+                var viewPoint1 = startPoint + forward * x * _viewRadius + right * y * _viewRadius;
+                var viewPoint2 = startPoint + forward * x * _viewRadius + right * y * -_viewRadius;
+                var losePoint1 = startPoint + forward * x * _loseRadius + right * y * _loseRadius;
+                var losePoint2 = startPoint + forward * x * _loseRadius + right * y * -_loseRadius;
 
-                Gizmos.color = Color.gray;
-                Gizmos.DrawLine(startPoint, nearClipPoint1);
-                Gizmos.DrawLine(startPoint, nearClipPoint2);
-
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(nearClipPoint1, farClipPoint1);
-                Gizmos.DrawLine(nearClipPoint2, farClipPoint2);
-
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(farClipPoint1, loseClipPoint1);
-                Gizmos.DrawLine(farClipPoint2, loseClipPoint2);
+                Debug.DrawLine(startPoint, nearClipPoint1, _colorNearClip);
+                Debug.DrawLine(startPoint, nearClipPoint2, _colorNearClip);
+                Debug.DrawLine(nearClipPoint1, viewPoint1, _colorView);
+                Debug.DrawLine(nearClipPoint2, viewPoint2, _colorView);
+                Debug.DrawLine(viewPoint1, losePoint1, _colorLose);
+                Debug.DrawLine(viewPoint2, losePoint2, _colorLose);
             }
 
-            if (_viewAngleDegrees == 0) return;
-
-            for (var i = 0; i < _viewAngleDegrees / 2; i += 2)
-            {
-                var previous_x = math.cos(math.radians(i));
-                var previous_y = math.sin(math.radians(i));
-                var current_x = math.cos(math.radians(math.clamp(i + 2, 0, _viewAngleDegrees / 2)));
-                var current_y = math.sin(math.radians(math.clamp(i + 2, 0, _viewAngleDegrees / 2)));
-
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(
-                    startPoint + forward * previous_x * _nearClipRadius + right * previous_y * _nearClipRadius,
-                    startPoint + forward * current_x * _nearClipRadius + right * current_y * _nearClipRadius);
-                Gizmos.DrawLine(
-                    startPoint + forward * previous_x * _nearClipRadius + right * -previous_y * _nearClipRadius,
-                    startPoint + forward * current_x * _nearClipRadius + right * -current_y * _nearClipRadius);
-
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(
-                    startPoint + forward * previous_x * _loseRadius + right * previous_y * _loseRadius,
-                    startPoint + forward * current_x * _loseRadius + right * current_y * _loseRadius);
-                Gizmos.DrawLine(
-                    startPoint + forward * previous_x * _loseRadius + right * -previous_y * _loseRadius,
-                    startPoint + forward * current_x * _loseRadius + right * -current_y * _loseRadius);
-
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(
-                    startPoint + forward * previous_x * _viewRadius + right * previous_y * _viewRadius,
-                    startPoint + forward * current_x * _viewRadius + right * current_y * _viewRadius);
-                Gizmos.DrawLine(
-                    startPoint + forward * previous_x * _viewRadius + right * -previous_y * _viewRadius,
-                    startPoint + forward * current_x * _viewRadius + right * -current_y * _viewRadius);
-            }
+            ExtendedDebug.DrawCurve(startPoint, forward, right, angleRadians, _nearClipRadius, _colorView, _curveStep);
+            ExtendedDebug.DrawCurve(startPoint, forward, right, angleRadians, _viewRadius, _colorView, _curveStep);
+            ExtendedDebug.DrawCurve(startPoint, forward, right, angleRadians, _loseRadius, _colorLose, _curveStep);
         }
 #endif
     }

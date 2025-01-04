@@ -30,5 +30,23 @@ namespace ECSPerception.Editor
             Debug.DrawLine(thirdPosition, fourthPosition, color);
             Debug.DrawLine(fourthPosition, firstPosition, color);
         }
+
+        public static void DrawCurve(float3 position, float3 forward, float3 right, float angleRadians, float radius, Color color, float step)
+        {
+            for (var angle = -angleRadians / 2; angle < angleRadians / 2; angle += step)
+            {
+                var nextAngle = math.min(angle + step, angleRadians / 2);
+
+                var x = math.cos(angle);
+                var y = math.sin(angle);
+                var next_x = math.cos(nextAngle);
+                var next_y = math.sin(nextAngle);
+
+                var start = position + forward * (radius * x) + right * (radius * y);
+                var end = position + forward * (radius * next_x) + right * (radius * next_y);
+
+                Debug.DrawLine(start, end, color);
+            }
+        }
     }
 }
