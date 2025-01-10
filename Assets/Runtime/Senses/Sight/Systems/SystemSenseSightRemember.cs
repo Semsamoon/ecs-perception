@@ -10,18 +10,12 @@ using UnityEngine;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightInitialize))]
     public partial struct SystemSenseSightRemember : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-#if UNITY_EDITOR
-            if (!SystemAPI.HasSingleton<ComponentSenseSightRayDebug>())
-            {
-                state.EntityManager.CreateSingleton(ComponentSenseSightRayDebug.Default);
-            }
-#endif
         }
 
         [BurstCompile]

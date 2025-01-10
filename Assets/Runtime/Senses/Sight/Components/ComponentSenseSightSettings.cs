@@ -4,19 +4,19 @@ namespace ECSPerception.Sight
 {
     public struct ComponentSenseSightSettings : IComponentData
     {
-        public int RaycastsAmount;
+        public int RaycastsLimit;
         public int RaycastsPerJobAmount;
 
         public static ComponentSenseSightSettings Default =>
             new()
             {
-                RaycastsAmount = 512,
+                RaycastsLimit = 512,
                 RaycastsPerJobAmount = 32,
             };
 
-        public void Deconstruct(out int raycastsAmount, out int raycastsPerJobAmount)
+        public void Deconstruct(out int raycastsLimit, out int raycastsPerJobAmount)
         {
-            raycastsAmount = RaycastsAmount;
+            raycastsLimit = RaycastsLimit;
             raycastsPerJobAmount = RaycastsPerJobAmount;
         }
     }

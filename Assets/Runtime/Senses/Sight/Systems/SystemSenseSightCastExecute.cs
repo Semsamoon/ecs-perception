@@ -19,17 +19,6 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            if (!SystemAPI.HasSingleton<ComponentSenseSightSettings>())
-            {
-                state.EntityManager.CreateSingleton(ComponentSenseSightSettings.Default);
-            }
-
-#if UNITY_EDITOR
-            if (!SystemAPI.HasSingleton<ComponentSenseSightRayDebug>())
-            {
-                state.EntityManager.CreateSingleton(ComponentSenseSightRayDebug.Default);
-            }
-#endif
         }
 
         [BurstCompile]
@@ -40,7 +29,8 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var (raycastsAmount, raycastsPerJobAmount) = SystemAPI.GetSingleton<ComponentSenseSightSettings>();
+            var raycastsAmount = SystemAPI.GetSingleton<ComponentSenseSightState>().RaycastsAmount;
+            var raycastsPerJobAmount = SystemAPI.GetSingleton<ComponentSenseSightSettings>().RaycastsPerJobAmount;
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
@@ -51,10 +41,10 @@ namespace ECSPerception.Sight
 
             foreach (var (receiverData, receiver) in SystemAPI
                          .Query<RefRO<ComponentSenseSightReceiver>>()
-                         .WithAll<BufferSenseSightCastPending>()
+                         .WithAll<BufferSenseSightCastExecute>()
                          .WithEntityAccess())
             {
-                var pending = SystemAPI.GetBuffer<BufferSenseSightCastPending>(receiver);
+                var executes = SystemAPI.GetBuffer<BufferSenseSightCastExecute>(receiver);
                 var actives = SystemAPI.GetBuffer<BufferSenseSightActive>(receiver);
                 var remembers = SystemAPI.GetBuffer<BufferSenseSightRemember>(receiver);
                 var rememberTime = receiverData.ValueRO.RememberTime;
@@ -62,23 +52,27 @@ namespace ECSPerception.Sight
                 var currentSource = Entity.Null;
                 var unsafeIndex = index;
 
-                for (var j = pending.Length - 1; j >= 0 && unsafeIndex < raycastsAmount; j--, unsafeIndex++)
+                for (var j = executes.Length - 1; j >= 0 && unsafeIndex < raycastsAmount; j--, unsafeIndex++)
                 {
-                    raycasts[unsafeIndex] = pending[j].Raycast;
+                    raycasts[unsafeIndex] = new RaycastSenseSightCast(executes[j]);
                     raycastsMeta[unsafeIndex] = new RaycastSenseSightCastMeta
-                        { Actives = actives, Remembers = remembers, RememberTime = rememberTime };
-
-                    if (currentSource != pending[j].Raycast.Source || j == 0)
                     {
-                        currentSource = pending[j].Raycast.Source;
-                        pending.RemoveRange(j, unsafeIndex - index + 1);
+                        Actives = actives,
+                        Remembers = remembers,
+                        RememberTime = rememberTime,
+                    };
+
+                    if (currentSource != executes[j].Source || j == 0)
+                    {
+                        currentSource = executes[j].Source;
+                        executes.RemoveRange(j, unsafeIndex - index + 1);
                         index = unsafeIndex + 1;
                     }
                 }
 
-                if (pending.Length == 0)
+                if (executes.Length == 0)
                 {
-                    commands.SetComponentEnabled<BufferSenseSightCastPending>(receiver, false);
+                    commands.SetComponentEnabled<BufferSenseSightCastExecute>(receiver, false);
                 }
 
                 if (index == raycastsAmount)
@@ -121,6 +115,7 @@ namespace ECSPerception.Sight
                 var sourcePosition = raycasts[i].SourcePosition;
                 var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycasts[i].Source).Position;
                 var color = results[i] ? rayDebug.ColorSuccess : rayDebug.ColorFailure;
+
                 Debug.DrawLine(receiverPosition, sourcePosition, color);
                 Debug.DrawLine(sourcePosition, sourcePositionReal, color);
                 ExtendedDebug.DrawOctahedron(sourcePosition, rayDebug.SizeOctahedronSmall, color);
@@ -138,7 +133,24 @@ namespace ECSPerception.Sight
                     if (raycastMeta.Actives.Take(raycast.Source, out var active) && raycastMeta.RememberTime > 0)
                     {
                         commands.AppendToBuffer(raycast.Receiver, new BufferSenseSightRemember
-                            { Source = raycast.Source, SourcePosition = active.SourcePosition, Timer = raycastMeta.RememberTime });
+                        {
+                            Source = raycast.Source,
+                            SourcePosition = active.SourcePosition,
+                            Timer = raycastMeta.RememberTime,
+                        });
+
+#if UNITY_EDITOR
+                        if (!SystemAPI.HasComponent<TagSenseDebug>(raycast.Receiver)
+                            || !SystemAPI.IsComponentEnabled<TagSenseDebug>(raycast.Receiver))
+                        {
+                            continue;
+                        }
+
+                        var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(raycast.Source).Position;
+                        ExtendedDebug.DrawOctahedron(raycast.SourcePosition, rayDebug.SizeOctahedronSmall, rayDebug.ColorNeutral);
+                        ExtendedDebug.DrawOctahedron(sourcePositionReal, rayDebug.SizeOctahedronStandard, rayDebug.ColorNeutral);
+                        Debug.DrawLine(raycast.SourcePosition, sourcePositionReal, rayDebug.ColorNeutral);
+#endif
                     }
 
                     continue;

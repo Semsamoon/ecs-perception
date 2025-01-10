@@ -2,20 +2,25 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
+#if UNITY_EDITOR
+using ECSPerception.Editor.Sight;
+using ECSPerception.Editor;
+using UnityEngine;
+#endif
 
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(SightSenseSystemGroup))]
+    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightInitialize))]
     public partial struct SystemSenseSightCastCone : ISystem
     {
-        private EntityQuery _queryCastsNeedOrPending;
+        private EntityQuery _queryCastsNeed;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            _queryCastsNeedOrPending = SystemAPI.QueryBuilder()
-                .WithAny<BufferSenseSightCastNeed, BufferSenseSightCastPending>()
+            _queryCastsNeed = SystemAPI.QueryBuilder()
+                .WithAny<BufferSenseSightCastNeed>()
                 .Build();
         }
 
@@ -27,7 +32,7 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            if (!_queryCastsNeedOrPending.IsEmpty)
+            if (!_queryCastsNeed.IsEmpty)
             {
                 return;
             }
@@ -51,13 +56,35 @@ namespace ECSPerception.Sight
                         if (actives.Take(source, out var active) && receiverData.ValueRO.RememberTime > 0)
                         {
                             commands.AppendToBuffer(receiver, new BufferSenseSightRemember
-                                { Source = source, SourcePosition = active.SourcePosition, Timer = receiverData.ValueRO.RememberTime });
+                            {
+                                Source = source,
+                                SourcePosition = active.SourcePosition,
+                                Timer = receiverData.ValueRO.RememberTime,
+                            });
+
+#if UNITY_EDITOR
+                            if (!SystemAPI.HasComponent<TagSenseDebug>(receiver)
+                                || !SystemAPI.IsComponentEnabled<TagSenseDebug>(receiver))
+                            {
+                                continue;
+                            }
+
+                            var rayDebug = SystemAPI.GetSingleton<ComponentSenseSightRayDebug>();
+                            var sourcePositionReal = SystemAPI.GetComponent<LocalToWorld>(source).Position;
+                            ExtendedDebug.DrawOctahedron(active.SourcePosition, rayDebug.SizeOctahedronSmall, rayDebug.ColorNeutral);
+                            ExtendedDebug.DrawOctahedron(sourcePositionReal, rayDebug.SizeOctahedronStandard, rayDebug.ColorNeutral);
+                            Debug.DrawLine(active.SourcePosition, sourcePositionReal, rayDebug.ColorNeutral);
+#endif
                         }
 
                         continue;
                     }
 
-                    commands.AppendToBuffer(receiver, new BufferSenseSightCastNeed { Source = source });
+                    commands.AppendToBuffer(receiver, new BufferSenseSightCastNeed
+                    {
+                        Source = source,
+                        SourcePosition = sourceTransform.ValueRO.Value.TransformPoint(sourceData.ValueRO.Offset),
+                    });
                 }
 
                 commands.SetComponentEnabled<BufferSenseSightCastNeed>(receiver, true);

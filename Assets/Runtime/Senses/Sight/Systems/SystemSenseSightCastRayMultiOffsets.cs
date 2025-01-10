@@ -6,7 +6,7 @@ using Unity.Transforms;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(SightSenseSystemGroup)), UpdateAfter(typeof(SystemSenseSightCastCone))]
+    [UpdateInGroup(typeof(SightSenseSystemGroup))]
     public partial struct SystemSenseSightCastRayMultiOffsets : ISystem
     {
         [BurstCompile]
@@ -22,6 +22,14 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var raycastsLimit = SystemAPI.GetSingleton<ComponentSenseSightSettings>().RaycastsLimit;
+            var raycastsAmount = SystemAPI.GetSingleton<ComponentSenseSightState>().RaycastsAmount;
+
+            if (raycastsAmount >= raycastsLimit)
+            {
+                return;
+            }
+
             var commands = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (receiverData, receiverTransform, receiver) in SystemAPI
@@ -29,47 +37,67 @@ namespace ECSPerception.Sight
                          .WithAll<TagSenseSightMultiCast>()
                          .WithAll<BufferSenseSightCastNeed, BufferSenseSightCastMultiOffset>()
                          // [BUG] Here must be WithDisabled, but it doesn't work for IBufferElementData
-                         .WithNone<BufferSenseSightCastPending>()
+                         .WithNone<BufferSenseSightCastExecute>()
                          .WithEntityAccess())
             {
                 var receiverPosition = receiverTransform.ValueRO.Value.TransformPoint(receiverData.ValueRO.Offset);
                 var needs = SystemAPI.GetBuffer<BufferSenseSightCastNeed>(receiver);
                 var offsets = SystemAPI.GetBuffer<BufferSenseSightCastMultiOffset>(receiver);
 
-                for (var i = needs.Length - 1; i >= 0; i--)
+                var i = 0;
+
+                while (i < needs.Length && raycastsAmount + offsets.Length < raycastsLimit)
                 {
-                    var source = needs[i].Source;
-                    var sourceTransform = SystemAPI.GetComponentRO<LocalToWorld>(source);
-                    var sourceData = SystemAPI.GetComponentRO<ComponentSenseSightSource>(source);
-                    var sourcePositionCenter = sourceTransform.ValueRO.Value.TransformPoint(sourceData.ValueRO.Offset);
-
-                    var sourcePosition = sourcePositionCenter;
-                    var raycastData = new RaycastSenseSightCast
+                    commands.AppendToBuffer(receiver, new BufferSenseSightCastExecute
                     {
-                        Receiver = receiver, ReceiverPosition = receiverPosition, Source = source, SourcePosition = sourcePosition,
+                        Receiver = receiver,
+                        ReceiverPosition = receiverPosition,
+                        SourcePosition = needs[i].SourcePosition,
+                        Source = needs[i].Source,
                         NearClipRadiusSquared = receiverData.ValueRO.NearClipRadiusSquared,
-                    };
-
-                    commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
+                    });
 
                     foreach (var offset in offsets)
                     {
-                        sourcePosition = sourcePositionCenter + offset.Offset;
-                        raycastData = new RaycastSenseSightCast
+                        commands.AppendToBuffer(receiver, new BufferSenseSightCastExecute
                         {
-                            Receiver = receiver, ReceiverPosition = receiverPosition, Source = source, SourcePosition = sourcePosition,
+                            Receiver = receiver,
+                            ReceiverPosition = receiverPosition,
+                            SourcePosition = needs[i].SourcePosition + offset.Offset,
+                            Source = needs[i].Source,
                             NearClipRadiusSquared = receiverData.ValueRO.NearClipRadiusSquared,
-                        };
-
-                        commands.AppendToBuffer(receiver, new BufferSenseSightCastPending { Raycast = raycastData });
+                        });
                     }
 
-                    needs.RemoveAt(i);
+                    i++;
+                    raycastsAmount += 1 + offsets.Length;
                 }
 
-                commands.SetComponentEnabled<BufferSenseSightCastNeed>(receiver, false);
-                commands.SetComponentEnabled<BufferSenseSightCastPending>(receiver, true);
+                if (i == 0)
+                {
+                    commands.SetComponentEnabled<BufferSenseSightCastNeed>(receiver, false);
+                    continue;
+                }
+
+                if (i == needs.Length)
+                {
+                    needs.Clear();
+                    commands.SetComponentEnabled<BufferSenseSightCastNeed>(receiver, false);
+                }
+                else
+                {
+                    needs.RemoveRangeSwapBack(0, i);
+                }
+
+                commands.SetComponentEnabled<BufferSenseSightCastExecute>(receiver, true);
+
+                if (raycastsAmount == raycastsLimit)
+                {
+                    break;
+                }
             }
+
+            SystemAPI.GetSingletonRW<ComponentSenseSightState>().ValueRW.RaycastsAmount = raycastsAmount;
 
             commands.Playback(state.EntityManager);
         }

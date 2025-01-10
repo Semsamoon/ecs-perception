@@ -41,10 +41,10 @@ namespace ECSPerception.Sight
                 AddBuffer<BufferSenseSightCastMultiOffset>(entity);
                 AddBuffer<BufferSenseSightActive>(entity);
                 AddBuffer<BufferSenseSightCastNeed>(entity);
-                AddBuffer<BufferSenseSightCastPending>(entity);
+                AddBuffer<BufferSenseSightCastExecute>(entity);
                 AddBuffer<BufferSenseSightRemember>(entity);
                 SetComponentEnabled<BufferSenseSightCastNeed>(entity, false);
-                SetComponentEnabled<BufferSenseSightCastPending>(entity, false);
+                SetComponentEnabled<BufferSenseSightCastExecute>(entity, false);
 
 #if UNITY_EDITOR
                 AddComponent<TagSenseDebug>(entity);
