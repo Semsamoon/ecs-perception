@@ -2,10 +2,10 @@
 
 namespace ECSPerception.Sight
 {
-    public struct RaycastSenseSightCastMeta
+    public struct UtilSenseSightRayMeta
     {
         public DynamicBuffer<BufferSenseSightActive> Actives;
-        public DynamicBuffer<BufferSenseSightRemember> Remembers;
+        public DynamicBuffer<BufferSenseSightMemory> Memories;
         public float RememberTime;
     }
 }

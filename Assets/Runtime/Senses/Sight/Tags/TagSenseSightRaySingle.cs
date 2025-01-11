@@ -2,7 +2,7 @@
 
 namespace ECSPerception.Sight
 {
-    public struct TagSenseSightMultiCast : IComponentData
+    public struct TagSenseSightRaySingle : IComponentData
     {
     }
 }

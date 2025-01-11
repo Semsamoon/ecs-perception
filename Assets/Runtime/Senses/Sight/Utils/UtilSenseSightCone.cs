@@ -6,25 +6,23 @@ using Unity.Transforms;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    public struct ConecastSenseSight
+    public struct UtilSenseSightCone
     {
-        public static bool IsInside(RefRO<ComponentSenseSightReceiver> receiverData, RefRO<LocalToWorld> receiverTransform,
-            RefRO<ComponentSenseSightSource> sourceData, RefRO<LocalToWorld> sourceTransform,
-            bool isExtendToLoseRadius)
+        public static bool Cast(RefRO<ComponentSenseSightReceiver> receiverData, RefRO<LocalToWorld> receiverTransform,
+            RefRO<ComponentSenseSightSource> sourceData, RefRO<LocalToWorld> sourceTransform, bool isExtendedRadius)
         {
-            return new ConecastSenseSight().IsInsideInternal(receiverData, receiverTransform, sourceData, sourceTransform, isExtendToLoseRadius);
+            return new UtilSenseSightCone().CastInternal(receiverData, receiverTransform, sourceData, sourceTransform, isExtendedRadius);
         }
 
         [BurstCompile]
-        private bool IsInsideInternal(RefRO<ComponentSenseSightReceiver> receiverData, RefRO<LocalToWorld> receiverTransform,
-            RefRO<ComponentSenseSightSource> sourceData, RefRO<LocalToWorld> sourceTransform,
-            bool isExtendToLoseRadius)
+        private bool CastInternal(RefRO<ComponentSenseSightReceiver> receiverData, RefRO<LocalToWorld> receiverTransform,
+            RefRO<ComponentSenseSightSource> sourceData, RefRO<LocalToWorld> sourceTransform, bool isExtendedRadius)
         {
             var receiverPosition = receiverTransform.ValueRO.Value.TransformPoint(receiverData.ValueRO.Offset);
             var difference = sourceTransform.ValueRO.Value.TransformPoint(sourceData.ValueRO.Offset) - receiverPosition;
             var distanceSquared = math.lengthsq(difference);
 
-            if (distanceSquared > (!isExtendToLoseRadius ? receiverData.ValueRO.ViewRadiusSquared : receiverData.ValueRO.LoseRadiusSquared)
+            if (distanceSquared > (!isExtendedRadius ? receiverData.ValueRO.ViewRadiusSquared : receiverData.ValueRO.LoseRadiusSquared)
                 || distanceSquared < receiverData.ValueRO.NearClipRadiusSquared)
             {
                 return false;

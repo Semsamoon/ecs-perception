@@ -3,7 +3,7 @@ using Unity.Mathematics;
 
 namespace ECSPerception.Sight
 {
-    public struct BufferSenseSightCastExecute : IBufferElementData, IEnableableComponent
+    public struct BufferSenseSightExecute : IBufferElementData, IEnableableComponent
     {
         public Entity Receiver;
         public float3 ReceiverPosition;

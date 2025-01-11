@@ -5,8 +5,8 @@ using Unity.Transforms;
 namespace ECSPerception.Sight
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderLast = true), UpdateAfter(typeof(SystemSenseSightExecute))]
-    public partial struct SystemSenseSightActive : ISystem
+    [UpdateInGroup(typeof(SightSenseSystemGroup), OrderFirst = true), UpdateAfter(typeof(SystemSenseSightInitialize))]
+    public partial struct SystemSenseSightPossible : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -23,18 +23,18 @@ namespace ECSPerception.Sight
         {
             foreach (var (_, receiver) in SystemAPI
                          .Query<RefRO<ComponentSenseSightReceiver>>()
-                         .WithAll<BufferSenseSightActive>()
+                         .WithAll<BufferSenseSightPossible>()
                          .WithEntityAccess())
             {
-                var actives = SystemAPI.GetBuffer<BufferSenseSightActive>(receiver);
+                var possibles = SystemAPI.GetBuffer<BufferSenseSightPossible>(receiver);
 
-                for (var i = 0; i < actives.Length; i++)
+                for (var i = 0; i < possibles.Length; i++)
                 {
-                    var source = actives[i].Source;
+                    var source = possibles[i].Source;
                     var offset = SystemAPI.GetComponent<ComponentSenseSightSource>(source).Offset;
                     var sourceTransform = SystemAPI.GetComponent<LocalToWorld>(source);
 
-                    actives[i] = new BufferSenseSightActive
+                    possibles[i] = new BufferSenseSightPossible
                     {
                         Source = source,
                         SourcePosition = sourceTransform.Value.TransformPoint(offset),

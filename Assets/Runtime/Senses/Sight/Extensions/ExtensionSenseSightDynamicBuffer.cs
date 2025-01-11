@@ -39,7 +39,7 @@ namespace ECSPerception.Sight
         }
 
         [BurstCompile]
-        public static bool Remove(this ref DynamicBuffer<BufferSenseSightRemember> buffer, in Entity entity)
+        public static bool Remove(this ref DynamicBuffer<BufferSenseSightMemory> buffer, in Entity entity)
         {
             for (var i = 0; i < buffer.Length; i++)
             {
@@ -54,7 +54,7 @@ namespace ECSPerception.Sight
         }
 
         [BurstCompile]
-        public static bool Has(this in DynamicBuffer<BufferSenseSightRemember> buffer, in Entity entity)
+        public static bool Has(this in DynamicBuffer<BufferSenseSightMemory> buffer, in Entity entity)
         {
             for (var i = 0; i < buffer.Length; i++)
             {

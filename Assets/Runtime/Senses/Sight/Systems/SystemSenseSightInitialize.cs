@@ -1,8 +1,5 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
-#if UNITY_EDITOR
-using ECSPerception.Editor.Sight;
-#endif
 
 namespace ECSPerception.Sight
 {
@@ -13,22 +10,15 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            if (!SystemAPI.HasSingleton<ComponentSenseSightSettings>())
+            if (!SystemAPI.HasSingleton<ComponentSenseSightLimits>())
             {
-                state.EntityManager.CreateSingleton(ComponentSenseSightSettings.Default);
+                state.EntityManager.CreateSingleton(ComponentSenseSightLimits.Default);
             }
 
-            if (!SystemAPI.HasSingleton<ComponentSenseSightState>())
+            if (!SystemAPI.HasSingleton<ComponentSenseSightCurrent>())
             {
-                state.EntityManager.CreateSingleton(ComponentSenseSightState.Default);
+                state.EntityManager.CreateSingleton(ComponentSenseSightCurrent.Default);
             }
-
-#if UNITY_EDITOR
-            if (!SystemAPI.HasSingleton<ComponentSenseSightRayDebug>())
-            {
-                state.EntityManager.CreateSingleton(ComponentSenseSightRayDebug.Default);
-            }
-#endif
         }
 
         [BurstCompile]
@@ -39,7 +29,7 @@ namespace ECSPerception.Sight
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            SystemAPI.GetSingletonRW<ComponentSenseSightState>().ValueRW.RaycastsAmount = 0;
+            SystemAPI.GetSingletonRW<ComponentSenseSightCurrent>().ValueRW.RaycastsAmount = 0;
         }
     }
 }

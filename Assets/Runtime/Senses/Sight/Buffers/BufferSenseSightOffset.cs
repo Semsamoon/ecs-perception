@@ -3,7 +3,7 @@ using Unity.Mathematics;
 
 namespace ECSPerception.Sight
 {
-    public struct BufferSenseSightCastMultiOffset : IBufferElementData
+    public struct BufferSenseSightOffset : IBufferElementData
     {
         public float3 Offset;
     }
