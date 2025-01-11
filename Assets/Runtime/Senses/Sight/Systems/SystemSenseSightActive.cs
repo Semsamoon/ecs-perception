@@ -31,6 +31,14 @@ namespace ECSPerception.Sight
                 for (var i = 0; i < actives.Length; i++)
                 {
                     var source = actives[i].Source;
+
+                    if (!SystemAPI.Exists(source))
+                    {
+                        actives.RemoveAtSwapBack(i);
+                        i--;
+                        continue;
+                    }
+
                     var offset = SystemAPI.GetComponent<ComponentSenseSightSource>(source).Offset;
                     var sourceTransform = SystemAPI.GetComponent<LocalToWorld>(source);
 

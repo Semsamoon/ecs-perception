@@ -34,7 +34,7 @@ namespace ECSPerception.Sight
                     var memory = memories[i];
                     memory.Timer -= deltaTime;
 
-                    if (memory.Timer <= 0)
+                    if (memory.Timer <= 0 || !SystemAPI.Exists(memory.Source))
                     {
                         memories.RemoveAtSwapBack(i);
                         i--;
